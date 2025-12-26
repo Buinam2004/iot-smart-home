@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "firmware_room",
+			"path": "../firmware_room"
+		}
+	],
+	"settings": {}
+}
