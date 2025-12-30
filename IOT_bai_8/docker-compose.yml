@@ -1,0 +1,23 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: iot_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: iot_db
+      # NOTE: MySQL image doesn't allow MYSQL_USER=root.
+      # Use the standard root password variable.
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mysql_data:
+
