@@ -96,7 +96,32 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-        
+
+
+        <!-- WebSocket Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <!-- STOMP Messaging -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+        </dependency>
+
+        <!-- Spring Integration MQTT -->
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-mqtt</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
         <!-- Spring Boot Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

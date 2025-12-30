@@ -1,7 +1,6 @@
-package com.iot.config;
+package com.iot.security;
 
 import com.iot.custom.DeviceAuthenticationToken;
-import com.iot.security.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

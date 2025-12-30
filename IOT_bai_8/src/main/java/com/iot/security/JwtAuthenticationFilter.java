@@ -1,8 +1,6 @@
-package com.iot.config;
+package com.iot.security;
 
 import com.iot.custom.CustomUserDetailsService;
-import com.iot.repository.UserRepository;
-import com.iot.security.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
