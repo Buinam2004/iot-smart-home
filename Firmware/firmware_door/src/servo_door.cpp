@@ -3,7 +3,7 @@
 #include <pins.h>
 
 
-#define SERVO_OPEN_ANGLE  30
+#define SERVO_OPEN_ANGLE  120
 #define SERVO_CLOSE_ANGLE 0
 
 static Servo doorServo;

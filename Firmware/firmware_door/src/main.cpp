@@ -15,18 +15,18 @@ static void mqttDataCallback(const char* topic, const char* payload) {
 }
 
 void syncTime() {
-    configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+    configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov", "time.google.com");
     Serial.print("[Time] Syncing");
 
     time_t now = time(nullptr);
-    while (now < 100000) {   // chưa có time hợp lệ
+    while (now < 100000) {
         delay(500);
         Serial.print(".");
         now = time(nullptr);
     }
 
     Serial.println();
-    Serial.println("[Time] Time synced");
+    Serial.println("[Time] Time synced successfully");
 }
 
 

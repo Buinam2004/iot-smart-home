@@ -26,6 +26,14 @@ void LCD_showReady() {
     lcd.print("SCAN CARD");
 }
 
+void LCD_showScanning() {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("CARD DETECTED");
+    lcd.setCursor(0, 1);
+    lcd.print("SCANNING...");
+}
+
 void LCD_showChecking() {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -54,4 +62,17 @@ void LCD_showGasAlert() {
     lcd.print("!!! GAS ALERT !!!");
     lcd.setCursor(0, 1);
     lcd.print("CHECK IMMEDIATELY");
+}
+
+void LCD_showTempHumidity(float temp, float hum) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Temp: ");
+    lcd.print(temp, 1);
+    lcd.print((char)223);  // Ký tự độ
+    lcd.print("C");
+    lcd.setCursor(0, 1);
+    lcd.print("Hum:  ");
+    lcd.print(hum, 1);
+    lcd.print("%");
 }

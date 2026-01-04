@@ -46,14 +46,16 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     memcpy(msg, payload, length);
     msg[length] = '\0';
 
-    // GAS ALERT từ KIT 1
-    if (strcmp(topic, "iot_smarthome/room1/gas/alert") == 0) {
+    Serial.printf("[MQTT] RX %s <- %s\n", topic, msg);
+
+    // Từ room1 (gas alert)
+    if (strcmp(topic, "iot_smarthome/room1") == 0) {
         Door_handleCommand(msg);
         return;
     }
 
-    // OPEN / DENY từ backend
-    if (strcmp(topic, "iot_smarthome/door1/command") == 0) {
+    // Từ door1 (command từ backend)
+    if (strcmp(topic, "iot_smarthome/door1") == 0) {
         Door_handleCommand(msg);
         return;
     }
@@ -74,14 +76,20 @@ void MQTT_loop() {
         if (millis() - lastTry > 3000) {
             lastTry = millis();
 
+            Serial.println("[MQTT] Attempting connection...");
             String cid = "esp8266_door_" + String(ESP.getChipId());
             if (mqtt.connect(cid.c_str(), MQTT_USER, MQTT_PASS)) {
+                Serial.println("[MQTT] Connected");
 
-                // Backend → Door (RFID result)
-                mqtt.subscribe("iot_smarthome/door1/command");
-
-                // KIT 1 → Door (Gas alert)
-                mqtt.subscribe("iot_smarthome/room1/gas/alert");
+                // Subscribe topic chính
+                mqtt.subscribe("iot_smarthome/door1");
+                mqtt.subscribe("iot_smarthome/room1");
+                Serial.println("[MQTT] Subscribed to door1 & room1");
+            } else {
+                Serial.print("[MQTT] Connection failed, state: ");
+                Serial.println(mqtt.state());
+                // States: -4=timeout, -3=lost, -2=failed, -1=disconnected, 0=connected
+                //         1=bad protocol, 2=bad client id, 3=unavailable, 4=bad credentials, 5=unauthorized
             }
         }
         return;
@@ -98,8 +106,8 @@ void MQTT_publish(const char* topic, const char* payload) {
             lastTry = millis();
             String cid = "esp8266_door_" + String(ESP.getChipId());
             if (mqtt.connect(cid.c_str(), MQTT_USER, MQTT_PASS)) {
-                mqtt.subscribe("iot_smarthome/door1/command");
-                mqtt.subscribe("iot_smarthome/room1/gas/alert");
+                mqtt.subscribe("iot_smarthome/door1");
+                mqtt.subscribe("iot_smarthome/room1");
                 Serial.println("[MQTT] Reconnected for publish");
             } else {
                 Serial.println("[MQTT] ERROR: Not connected, cannot publish");
