@@ -1,9 +1,7 @@
 package com.iot.service;
 
 
-import com.iot.entity.DhtSensor;
-import com.iot.entity.GasSensor;
-import com.iot.entity.PirSensor;
+import com.iot.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -59,6 +57,19 @@ public class SseService {
         String deviceId = String.valueOf(data.getDeviceId());
         sendToDevice(deviceId, "gas-data", data);
     }
+
+    public void broadcastFanData(Fan data) {
+        String deviceId = String.valueOf(data.getDeviceId());
+        sendToDevice(deviceId, "fan-data", data);
+    }
+
+    public void broadcastLed_PirData(Led_Pir data){
+        String deviceId = String.valueOf(data.getDeviceId());
+        sendToDevice(deviceId, "led-pir-data", data);
+    }
+
+    public void sendToDevice(String deviceId, String data, SseEmitter emitter) {}
+
     public void sendToDevice(String deviceId, String event, DhtSensor data) {}
 
     // Hàm dùng chung để gửi message cho đúng nhóm deviceId

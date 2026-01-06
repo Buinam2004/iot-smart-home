@@ -2,10 +2,7 @@ package com.iot.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.iot.entity.DhtSensor;
-import com.iot.entity.Door;
-import com.iot.entity.GasSensor;
-import com.iot.entity.PirSensor;
+import com.iot.entity.*;
 import com.iot.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +28,8 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private final GasSensorRepository gasSensorRepository;
     private final RfidRepository rfidRepository;
     private final DoorRepository doorRepository;
+    private final FanRepository fanRepository;
+    private final Led_PirRepository ledPirRepository;
     private final SseService sseService;
     private final MqttPublishService mqttPublishService;
 
@@ -256,9 +255,11 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         switch (device) {
             case "fan":
                 log.info("💨 Fan: {} | Time: {}", stateStr, timestamp);
+                handleFanData(state, timestamp, deviceId);
                 break;
             case "led_pir":
                 log.info("💡 LED PIR: {} | Time: {}", stateStr, timestamp);
+                handleLed_pir(state, timestamp, deviceId);
                 break;
             default:
                 log.info("🔧 Device '{}': {} | Time: {}", device, stateStr, timestamp);
@@ -268,6 +269,38 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         // TODO: Cập nhật dashboard real-time
         // TODO: Tính toán thời gian hoạt động và tiêu thụ điện
     }
+
+    private void handleFanData(int state, String timestamp, String deviceId) {
+        Fan fan = new Fan();
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
+        fan.setState(state);
+        fan.setCreatedAt(localDateTime);
+        fan.setDeviceId(Integer.parseInt(deviceId));
+
+        fanRepository.save(fan);
+
+         // publish
+        sseService.broadcastFanData(fan);
+
+    }
+    private void handleLed_pir(int state, String timestamp, String deviceId) {
+        Led_Pir led_pir = new Led_Pir();
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
+
+        led_pir.setState(state);
+        led_pir.setCreatedAt(localDateTime);
+        led_pir.setDeviceId(Integer.parseInt(deviceId));
+
+        ledPirRepository.save(led_pir);
+
+        // publish
+        sseService.broadcastLed_PirData(led_pir);
+    }
+
+
+
+
+
 
     // ==================== DOOR1 MESSAGE HANDLERS ====================
     private void handleDoor1Message(JsonNode json, String deviceId) {
