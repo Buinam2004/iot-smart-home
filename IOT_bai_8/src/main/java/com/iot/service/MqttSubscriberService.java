@@ -290,7 +290,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
 
     private void handleFanData(int state, String timestamp, String deviceId) {
         Fan fan = new Fan();
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
         fan.setState(state);
         fan.setCreatedAt(localDateTime);
         fan.setDeviceId(Integer.parseInt(deviceId));
@@ -303,7 +303,8 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     }
     private void handleLed_pir(int state, String timestamp, String deviceId) {
         Led_Pir led_pir = new Led_Pir();
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
+
 
         led_pir.setState(state);
         led_pir.setCreatedAt(localDateTime);
