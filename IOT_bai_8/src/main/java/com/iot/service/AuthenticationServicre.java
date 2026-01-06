@@ -7,7 +7,9 @@ import com.iot.repository.DeviceRepository;
 import com.iot.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,6 +47,9 @@ public class AuthenticationServicre implements IAuthenticationService {
             log.info("User {} has role {}", username, role);
 
             String access_token = tokenProvider.generateToken(username, role);
+            String refresh_token = tokenProvider.generateRefreshToken(username, role);
+            ResponseCookie refreshTokenCookie = buildRefreshTokenCookie(refresh_token, tokenProvider.getRefreshExpirationInMillis());
+
             AuthResponseDTO respDTO =
                     AuthResponseDTO.builder()
                     .userId(userDetails.getUserId())
@@ -53,9 +58,9 @@ public class AuthenticationServicre implements IAuthenticationService {
                     .accessToken(access_token)
                     .expiresIn(tokenProvider.getExpirationInMillis())
                     .build();
-            return ResponseEntity.ok(respDTO);
-
-
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    .body(respDTO);
         }
         // Xử lý các ngoại lệ xác thực
         catch (BadCredentialsException e) { // Sai thông tin đăng nhập
@@ -90,4 +95,56 @@ public class AuthenticationServicre implements IAuthenticationService {
         return ResponseEntity.ok().body(response);
     }
 
+    @Override
+    public ResponseEntity<?> refreshToken(String refreshToken, String authHeader) {
+        if(tokenProvider.validateToken(refreshToken)) {
+            String username = tokenProvider.getUsernameFromJWT(refreshToken);
+            String role = tokenProvider.getRoleFromJWT(refreshToken);
+
+            String newAccessToken = tokenProvider.generateToken(username, role);
+            String newRefreshToken = tokenProvider.generateRefreshToken(username, role);
+
+            ResponseCookie refreshTokenCookie = buildRefreshTokenCookie(newRefreshToken, tokenProvider.getRefreshExpirationInMillis());
+
+            AuthResponseDTO respDTO =
+                    AuthResponseDTO.builder()
+                            .username(username)
+                            .role(role)
+                            .accessToken(newAccessToken)
+                            .expiresIn(tokenProvider.getExpirationInMillis())
+                            .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    .body(respDTO);
+        } else {
+            log.warn("Invalid refresh token during token refresh");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> logout(String refreshToken, String authHeader) {
+
+        if(tokenProvider.validateToken(refreshToken)) {
+
+            ResponseCookie deleteCookie = buildRefreshTokenCookie(null, 0);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                    .body("Logged out successfully");
+        } else {
+            log.warn("Invalid refresh token during logout");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+    }
+
+    private ResponseCookie buildRefreshTokenCookie(String refreshToken, long maxAgeMillis) {
+        return ResponseCookie.from("RefreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false) // ⚠️ Set to false for localhost HTTP (true for production HTTPS)
+                .sameSite("Lax") // ✅ Changed from Strict to Lax - allows same-site requests
+                .path("/")
+                .maxAge(maxAgeMillis / 1000) // Convert to seconds
+                .build();
+    }
 }

@@ -6,10 +6,7 @@ import com.iot.dto.LoginRequestDTO;
 import com.iot.service.IAuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -31,5 +28,18 @@ public class AuthenticationController {
         Integer deviceId = authenticateDeviceDTO.getId();
         String deviceSecret = authenticateDeviceDTO.getDeviceKey();
         return authenticationServicre.authenticateDevice(deviceId, deviceSecret);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return authenticationServicre.refreshToken(refreshToken, authHeader);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        return authenticationServicre.logout(refreshToken, authHeader);
     }
 }

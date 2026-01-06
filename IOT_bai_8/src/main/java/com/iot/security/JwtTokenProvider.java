@@ -19,8 +19,10 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenProvider {
 
-
+    private final int TIME_EXPIRE_ACCESSTOKEN = 3600000; // 1 hour in milliseconds
+    private final int TIME_EXPIRE_REFRESHTOKEN = 7 * 86400000; // 24 hours in milliseconds
     private final SecretKey jwtSecret;
+
     // Hàm khởi tạo để nhận giá trị bí mật từ application.properties
     public JwtTokenProvider(@Value("${app.jwt.secret}") String secret) {
         this.jwtSecret = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); // tạo khóa bí mật từ chuỗi ký tự
@@ -30,7 +32,19 @@ public class JwtTokenProvider {
     public String generateToken(String username, String role) {
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + 3600000); // 1 hour validity
+        Date expiryDate = new Date(now.getTime() + TIME_EXPIRE_ACCESSTOKEN); // 1 hour validity
+        return Jwts.builder()
+                .subject(username)
+                .claim("role", role)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .signWith(jwtSecret)
+                .compact();
+    }
+    public String generateRefreshToken(String username, String role) {
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + TIME_EXPIRE_REFRESHTOKEN); // 7 days validity
         return Jwts.builder()
                 .subject(username)
                 .claim("role", role)
@@ -42,7 +56,7 @@ public class JwtTokenProvider {
     public String generateDeviceToken(Integer id, String deviceKey) {
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + 3600000);
+        Date expiryDate = new Date(now.getTime() + TIME_EXPIRE_ACCESSTOKEN);
         return Jwts.builder()
                 .subject(id.toString())
                 .claim("deviceKey", deviceKey)
@@ -62,14 +76,6 @@ public class JwtTokenProvider {
                 .getSubject();
         return Integer.parseInt(subject);
     }
-    public String getDeviceKeyFromJWT(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(jwtSecret)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.get("deviceKey", String.class);
-    }
 
     public String extractJwtDeviceFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("TokenDevice");
@@ -82,7 +88,10 @@ public class JwtTokenProvider {
 
 
     public int getExpirationInMillis() {
-        return 3600000;
+        return TIME_EXPIRE_ACCESSTOKEN;
+    }
+    public int getRefreshExpirationInMillis() {
+        return TIME_EXPIRE_REFRESHTOKEN;
     }
 
     public String extractJwtFromRequest(HttpServletRequest request) {

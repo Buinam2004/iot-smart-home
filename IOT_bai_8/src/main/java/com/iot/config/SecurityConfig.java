@@ -80,7 +80,12 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests((authz) -> authz
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(
+                        "/api/auth/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/users").permitAll()
                 .anyRequest().authenticated()
             )
