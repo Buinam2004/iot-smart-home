@@ -294,83 +294,7 @@ firmware_room/
 
 ---
 
-### 4. Device State (Room → Backend)
-
-**Topic:** `iot_smarthome/room1`
-
-#### Fan State
-
-```json
-{
-  "type": "device",
-  "device": "fan",
-  "state": 1,
-  "timestamp": "2026-01-04 15:30:45"
-}
-```
-
-#### LED PIR State
-
-```json
-{
-  "type": "device",
-  "device": "led_pir",
-  "state": 1,
-  "timestamp": "2026-01-04 15:30:45"
-}
-```
-
-| Trường    | Kiểu   | Mô tả                    |
-| --------- | ------ | ------------------------ |
-| type      | string | `"device"`               |
-| device    | string | `"fan"` hoặc `"led_pir"` |
-| state     | int    | `1` = ON, `0` = OFF      |
-| timestamp | string | Thời gian thay đổi       |
-
----
-
-### 5. Commands (Backend → Room)
-
-**Topic:** `iot_smarthome/room1`
-
-#### Điều khiển quạt
-
-```json
-{
-  "type": "command",
-  "device": "fan",
-  "state": 1/0
-}
-```
-
-#### Điều khiển đèn PIR
-
-```json
-{
-  "type": "command",
-  "device": "led_pir",
-  "state": 1/0
-}
-```
-
-#### Clear Gas Alert
-
-```json
-{
-  "type": "command",
-  "device": "gas",
-  "action": "clear"
-}
-```
-
-| Trường | Kiểu   | Giá trị                                |
-| ------ | ------ | -------------------------------------- |
-| type   | string | `"command"`                            |
-| device | string | `"fan"`, `"led_pir"`, `"gas"`          |
-| state  | int    | `1` = ON, `0` = OFF (cho fan, led_pir) |
-| action | string | `"clear"` (cho gas)                    |
-
----
+z
 
 ## Sequence Diagram
 
@@ -459,6 +383,7 @@ configTime(7 * 3600, 0, "pool.ntp.org", "time.nist.gov");
 # Build
 pio run
 
+
 # Upload
 pio run --target upload
 
@@ -484,7 +409,7 @@ pio device monitor --baud 115200
 [PIR] Init OK
 [System] Setup complete
 [MQTT] Connecting... OK
-[MQTT] Subscribed: iot_smarthome/room1
+[MQTT] Subscribed: iot_smarthome/room1room1
 [MQTT] TX room1 -> {"type":"sensor","sensor":"dht","temperature":25.5,"humidity":65.0,"timestamp":"2026-01-04 15:30:45"}
 [PIR] Motion detected! LED ON
 [MQTT] TX room1 -> {"type":"sensor","sensor":"pir","motion":1,"light":1,"timestamp":"2026-01-04 15:30:50"}

@@ -23,8 +23,8 @@ void Room_clearGasAlert();
 void Room_setPIRLedState(bool on);  // Điều khiển đèn PIR qua MQTT
 
 // ===== Getter (nếu backend cần) =====
-float Room_getTemperature();
-float Room_getHumidity();
+double Room_getTemperature();
+double Room_getHumidity();
 int   Room_getGasValue();
 bool  Room_isFanOn();
 bool  Room_isLightOn();

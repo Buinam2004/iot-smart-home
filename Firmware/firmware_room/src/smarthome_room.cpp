@@ -27,8 +27,8 @@ static unsigned long lastMQ2Read = 0;
 static unsigned long lastLCDUpdate = 0;
 
 // ===== SENSOR DATA =====
-static float temperature = 0;
-static float humidity = 0;
+static double temperature = 0;
+static double humidity = 0;
 static int gasValue = 0;
 
 // ===== MQTT CALLBACK =====
@@ -318,8 +318,8 @@ void Room_setPIRLedState(bool on) {
 }
 
 // ===== GETTERS =====
-float Room_getTemperature() { return temperature; }
-float Room_getHumidity()    { return humidity; }
+double Room_getTemperature() { return temperature; }
+double Room_getHumidity()    { return humidity; }
 int   Room_getGasValue()    { return gasValue; }
 bool  Room_isFanOn()        { return Fan_getState(); }
 bool  Room_isLightOn()      { return pirLedOn; }

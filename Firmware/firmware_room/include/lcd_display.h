@@ -14,7 +14,7 @@ void LCD_setBacklight(bool on);
 void LCD_print(const char* msg, uint8_t row = 0);
 
 // Các chế độ hiển thị
-void LCD_showNormal(float temp, float humidity, bool fanOn, bool lightOn);
+void LCD_showNormal(double temp, double humidity, bool fanOn, bool lightOn);
 void LCD_showGasAlert(int gasValue);
 void LCD_showMotion(bool detected);
 void LCD_showInfo(const char* line1, const char* line2);

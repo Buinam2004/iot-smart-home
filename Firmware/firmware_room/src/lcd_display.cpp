@@ -56,7 +56,7 @@ void LCD_print(const char* msg, uint8_t row) {
     lcd.print(msg);
 }
 
-void LCD_showNormal(float temp, float humidity, bool fanOn, bool lightOn) {
+void LCD_showNormal(double temp, double humidity, bool fanOn, bool lightOn) {
     if (!initialized) return;
     
     displayMode = DISPLAY_NORMAL;
