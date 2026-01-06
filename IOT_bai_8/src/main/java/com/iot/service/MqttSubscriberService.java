@@ -14,6 +14,7 @@ import jakarta.annotation.PreDestroy;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +40,8 @@ public class MqttSubscriberService implements MqttCallbackExtended {
 
 
     private static final String[] TOPICS = {
-            "iot_smarthome/+/door1",
-            "iot_smarthome/+/room1"
+            "iot_smarthome/door1/+",
+            "iot_smarthome/room1/+"  // + = macAddress
     };
 
     private static final int[] QOS = {1, 1};
@@ -85,7 +86,23 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     public void messageArrived(String topic, MqttMessage message) {
         String payload = new String(message.getPayload());
         String[] parts = topic.split("/");
-        String deviceId = parts[1];
+        String macAddress = parts[2];
+        String deviceId = null;
+        try {
+            Device device = deviceRepository.findByMacAddress(macAddress);
+            if (device != null) {
+                deviceId = String.valueOf(device.getId());
+            }
+            else {
+                log.error("Device with MAC address {} not found", macAddress);
+                return;
+            }
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return;
+        }
+        log.info("deviceId: {}", deviceId);
         log.info("Nhận message | topic: {} | payload: {}", topic, payload);
 
 
@@ -123,7 +140,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     }
 
     // ==================== ROOM1 MESSAGE HANDLERS ====================
-    private void handleRoom1Message(JsonNode json, String deviceId) {
+    private void  handleRoom1Message(JsonNode json, String deviceId) {
         String type = json.has("type") ? json.get("type").asText() : "";
         
         switch (type) {
@@ -183,6 +200,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         DhtSensorRepository.save(dhtSensor);
 
         sseService.broadcastDhtData(dhtSensor);
+        
     }
 
     private void handlePIRData(JsonNode json, String deviceId) {
@@ -278,7 +296,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         fan.setDeviceId(Integer.parseInt(deviceId));
 
         fanRepository.save(fan);
-
+        log.info("Dinh Quoc Dat 2");
          // publish
         sseService.broadcastFanData(fan);
 

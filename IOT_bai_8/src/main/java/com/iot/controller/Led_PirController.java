@@ -19,7 +19,7 @@ public class Led_PirController {
     @PostMapping
     public ResponseEntity<?> pubishLed_Pir(@RequestBody Integer deviceId, @RequestBody int state) {
         try {
-            mqttPublishService.sendLed_PirCommand(deviceId.toString(), state);
+            mqttPublishService.sendLed_PirCommand(deviceId, state);
             return ResponseEntity.ok("Đã gửi lệnh điều khiển đèn led");
         }
         catch (Exception e) {

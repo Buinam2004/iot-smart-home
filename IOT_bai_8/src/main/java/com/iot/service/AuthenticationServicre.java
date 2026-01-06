@@ -78,17 +78,17 @@ public class AuthenticationServicre implements IAuthenticationService {
     }
 
     @Override
-    public ResponseEntity<?> authenticateDevice(Integer deviceId, String deviceKey) {
+    public ResponseEntity<?> authenticateDevice(Integer deviceId, String macAddress) {
         // Kiểm tra thông tin đăng nhập của thiết bị trong cơ sở dữ liệu
-        boolean checkCredentials = deviceRepository.existsByIdAndDeviceKey(deviceId, deviceKey);
+        boolean checkCredentials = deviceRepository.existsByIdAndMacAddress(deviceId, macAddress);
         if (!checkCredentials) {
             log.warn("Device authentication failed for deviceId={}", deviceId);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid device ID or device key");
         }
-        String deviceToken = tokenProvider.generateDeviceToken(deviceId, deviceKey);
+        String deviceToken = tokenProvider.generateDeviceToken(deviceId, macAddress);
         TokenDeviceDTO response = TokenDeviceDTO.builder()
                 .deviceId(deviceId)
-                .deviceKey(deviceKey)
+                .macAddress(macAddress)
                 .tokenDevice(deviceToken)
                 .build();
         log.info("Device authenticated successfully: deviceId={}", deviceId);

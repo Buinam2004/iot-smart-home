@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class CreateDeviceDTO {
-    String deviceKey;
+    String macAddress;
     String name;
 }

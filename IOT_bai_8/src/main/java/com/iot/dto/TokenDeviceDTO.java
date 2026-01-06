@@ -11,6 +11,6 @@ import lombok.Setter;
 @Setter
 public class TokenDeviceDTO {
     Integer deviceId;
-    String deviceKey;
+    String macAddress;
     String tokenDevice;
 }

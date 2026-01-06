@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iot.dto.DeviceState;
 import com.iot.dto.DoorCommand;
+import com.iot.entity.Device;
 import com.iot.entity.Fan;
 import com.iot.entity.Led_Pir;
+import com.iot.repository.DeviceRepository;
 import com.iot.repository.DoorRepository;
 import com.iot.repository.FanRepository;
 import com.iot.repository.Led_PirRepository;
@@ -17,6 +19,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,15 +31,15 @@ public class MqttPublishService {
     private final FanRepository fanRepository;
     private final DoorRepository doorRepository;
     private final Led_PirRepository led_PirRepository;
+    private final DeviceRepository deviceRepository;
 
-    public void sendDoorCommand(String deviceId, String action) throws MqttException {
+    public void sendDoorCommand(String macAddress, String action) throws MqttException {
         DoorCommand command = new DoorCommand("command", "door", action.toUpperCase());
         try {
             // 2. Chuyển Object thành JSON String
             String payload = objectMapper.writeValueAsString(command);
 
-            // 3. Xác định topic (ví dụ: iot_smarthome/101/door1/command)
-            String topic = String.format("iot_smarthome/%s/door1/command", deviceId);
+            String topic = String.format("iot_smarthome/door1/%s", macAddress);
 
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
@@ -52,13 +55,20 @@ public class MqttPublishService {
         }
     }
 
-    public void sendFanCommand(String deviceId, int state) throws MqttException {
+    public void sendFanCommand(Integer deviceId, int state) throws MqttException {
         try{
+            Optional<Device> device = deviceRepository.findById(deviceId);
+            if(device == null){
+                log.error("Device with ID {} not found", deviceId);
+                return;
+            }
+            log.info("Dinh Quoc Dat");
+            String macAddress = device.get().getMacAddress();
             LocalDateTime  now = LocalDateTime.now();
             DeviceState deviceState = new DeviceState("device", "fan", state, now);
             String payload = objectMapper.writeValueAsString(deviceState);
 
-            String topic = String.format("iot_smarthome/%s/door1/command", deviceId);
+            String topic = String.format("iot_smarthome/room1/%s", macAddress);
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
             message.setRetained(true);
@@ -67,7 +77,7 @@ public class MqttPublishService {
             log.info("🚀 Sent Command | Topic: {} | Payload: {}", topic, payload);
             Fan fan = new Fan();
             fan.setCreatedAt(now);
-            fan.setDeviceId(Integer.parseInt(deviceId));
+            fan.setDeviceId(deviceId);
             fan.setState(state);
             fanRepository.save(fan);
 
@@ -78,13 +88,19 @@ public class MqttPublishService {
         }
     }
 
-    public void sendLed_PirCommand(String deviceId, int state) throws MqttException {
+    public void sendLed_PirCommand(int deviceId, int state) throws MqttException {
         try{
+            Optional<Device> device = deviceRepository.findById(deviceId);
+            if(device == null){
+                log.error("Device with ID {} not found", deviceId);
+                return;
+            }
+            String macAddress = device.get().getMacAddress();
             LocalDateTime  now = LocalDateTime.now();
             DeviceState deviceState = new DeviceState("device", "led_pir", state, now);
             String payload = objectMapper.writeValueAsString(deviceState);
 
-            String topic = String.format("iot_smarthome/%s/door1/command", deviceId);
+            String topic = String.format("iot_smarthome/room1/%s", macAddress);
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
             message.setRetained(true);
@@ -93,7 +109,7 @@ public class MqttPublishService {
             log.info("🚀 Sent Command | Topic: {} | Payload: {}", topic, payload);
             Led_Pir led_pir = new Led_Pir();
             led_pir.setCreatedAt(now);
-            led_pir.setDeviceId(Integer.parseInt(deviceId));
+            led_pir.setDeviceId(deviceId);
             led_pir.setState(state);
             led_PirRepository.save(led_pir);
 

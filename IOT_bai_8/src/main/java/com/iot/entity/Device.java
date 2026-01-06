@@ -3,6 +3,7 @@ package com.iot.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +25,8 @@ public class Device {
     @Column(nullable = false)
     private String name;
     
-    @Column(name = "device_key", nullable = false, unique = true)
-    private String deviceKey;
+    @Column(name = "macAddress", nullable = false, unique = true)
+    private String macAddress;
     
     @Column(name = "is_online")
     private Boolean isOnline = false;

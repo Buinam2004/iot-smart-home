@@ -13,7 +13,7 @@ public class DeviceDTO {
     private Integer id;
     private Integer userId;
     private String name;
-    private String deviceKey;
+    private String macAddress;
     private Boolean isOnline;
     private LocalDateTime createdAt;
     private String creatorName; // Tên người tạo

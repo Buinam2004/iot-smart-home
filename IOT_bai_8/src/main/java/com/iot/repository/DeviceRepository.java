@@ -20,6 +20,8 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
 //    @Query("SELECT d FROM Device d WHERE d.id = :id AND d.user.id = :userId")
     boolean existsByIdAndUserId(Integer id, Integer userId);
 
-    boolean existsByIdAndDeviceKey(Integer id, String deviceKey);
+    boolean existsByIdAndMacAddress( Integer id, String macAddress);
+
+    Device findByMacAddress(String macAddress);
 
 }

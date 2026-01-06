@@ -12,5 +12,4 @@ public class DeviceState {
     private String device;
     private int state;
     private LocalDateTime timestamp;
-
 }

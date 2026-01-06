@@ -5,7 +5,6 @@ import com.iot.dto.CreateDeviceDTO;
 import com.iot.dto.DeviceDTO;
 import com.iot.dto.UpdateDeviceDTO;
 import com.iot.entity.Device;
-import com.iot.entity.User;
 import com.iot.repository.DeviceRepository;
 import com.iot.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +43,7 @@ public class DeviceService implements IDeviceService {
     
     public Device createDevice(Integer userId, CreateDeviceDTO device) {
         Device newDevice = new Device();
-        newDevice.setDeviceKey(device.getDeviceKey());
+        newDevice.setMacAddress(device.getMacAddress());
         newDevice.setName(device.getName());
         newDevice.setUserId(userId);
 
@@ -57,13 +56,13 @@ public class DeviceService implements IDeviceService {
 
         UpdateDeviceDTO updateDeviceDTO = new UpdateDeviceDTO();
         device.setId(id);
-        device.setDeviceKey(deviceDetails.getDeviceKey());
+        device.setMacAddress(deviceDetails.getMacAddress());
         device.setName(deviceDetails.getName());
         device.setUserId(deviceDetails.getUserId());
         device.setIsOnline(deviceDetails.getIsOnline());
         deviceRepository.save(device);
         return  updateDeviceDTO.builder()
-                .deviceKey(deviceDetails.getDeviceKey())
+                .deviceKey(deviceDetails.getMacAddress())
                 .name(deviceDetails.getName())
                 .userId(deviceDetails.getUserId())
                 .isOnline(deviceDetails.getIsOnline())
@@ -130,7 +129,7 @@ public class DeviceService implements IDeviceService {
         dto.setId(device.getId());
         dto.setUserId(device.getUserId());
         dto.setName(device.getName());
-        dto.setDeviceKey(device.getDeviceKey());
+        dto.setMacAddress(device.getMacAddress());
         dto.setIsOnline(device.getIsOnline());
         dto.setCreatedAt(device.getCreatedAt());
         
