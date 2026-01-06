@@ -23,7 +23,7 @@ const router = createRouter({
       get isAuthenticated() {
         return authStore.state.isAuthenticated
       },
-      get userId(): string | null {
+      get userId(): number | null {
         return authStore.state.userId
       },
       login: async (payload) => {

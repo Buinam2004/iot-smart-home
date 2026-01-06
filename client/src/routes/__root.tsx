@@ -8,7 +8,6 @@ import TanStackQueryDevtools from '../integrations/devtools'
 
 import type {
   LoginResponse,
-  LogoutResponse,
   RefreshResponse,
 } from '@/types/responses/authResponses'
 import type { QueryClient } from '@tanstack/react-query'
@@ -21,8 +20,8 @@ interface MyRouterContext {
   queryClient: QueryClient
   auth: {
     isAuthenticated: boolean
-    userId: string | null
-    logout: () => Promise<LogoutResponse>
+    userId: number | null
+    logout: () => Promise<string>
     login: (payload: LoginPayload) => Promise<LoginResponse>
     refresh: () => Promise<RefreshResponse>
   }

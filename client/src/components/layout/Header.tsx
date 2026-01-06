@@ -2,26 +2,28 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate, useRouteContext } from '@tanstack/react-router'
 import { BarChart3Icon, LogOutIcon, UserIcon } from 'lucide-react'
 
-import type { UserData, UserResponse } from '@/types/responses/profileResponses'
+import type { UserResponse } from '@/types/responses/profileResponses'
 
 import { api } from '@/auth/authApi'
 
 export default function Header() {
-  const { isAuthenticated, logout } = useRouteContext({
+  const { isAuthenticated, logout, userId } = useRouteContext({
     from: '__root__',
     select: (ctx) => ({
+      userId: ctx.auth.userId,
       isAuthenticated: ctx.auth.isAuthenticated,
       logout: ctx.auth.logout,
     }),
   })
   const navigate = useNavigate()
 
-  const { data: profile, error } = useQuery<UserData>({
+  const { data: profile, error } = useQuery<UserResponse>({
     queryKey: ['profile'],
     queryFn: async () => {
-      const res = await api.get<UserResponse>('user')
-      return res.data.data
+      const res = await api.get<UserResponse>(`users/${userId}`)
+      return res.data
     },
+    enabled: !!isAuthenticated,
   })
 
   if (error) {
@@ -45,7 +47,7 @@ export default function Header() {
             <Link to="/" className="flex items-center space-x-2">
               <BarChart3Icon className="h-8 w-8 text-blue-600" />
               <h1 className="text-xl font-bold text-gray-900">
-                Project Manager
+                IOT Smart Home
               </h1>
             </Link>
           </div>
@@ -66,17 +68,9 @@ export default function Header() {
               <>
                 <div className="flex items-center space-x-2">
                   <Link to="/profile" className="relative group">
-                    {profile?.avatar ? (
-                      <img
-                        src={profile.avatar}
-                        alt={profile.displayName}
-                        className="h-8 w-8 rounded-full object-cover cursor-pointer"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer">
-                        <UserIcon className="h-5 w-5 text-gray-500" />
-                      </div>
-                    )}
+                    <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer">
+                      <UserIcon className="h-5 w-5 text-gray-500" />
+                    </div>
 
                     {/* Tooltip */}
                     <div
@@ -85,10 +79,7 @@ export default function Header() {
                     >
                       <div className="rounded-md bg-white shadow-md py-2 px-3 text-sm border border-gray-200 whitespace-nowrap">
                         <div className="font-medium text-gray-800">
-                          {profile?.displayName ?? 'No name'}
-                        </div>
-                        <div className="text-gray-500">
-                          @{profile?.username ?? 'Unknown'}
+                          {profile?.username ?? 'No name'}
                         </div>
                       </div>
                     </div>

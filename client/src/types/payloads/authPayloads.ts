@@ -6,6 +6,5 @@ export type LoginPayload = {
 export type RegisterPayload = {
   username: string
   password: string
-  displayName: string
   email: string
 }

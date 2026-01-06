@@ -1,11 +1,9 @@
 import axios from 'axios'
-import { decode } from 'jsonwebtoken'
 import { toast } from 'react-toastify'
 
 import { authStore, clearAuth, setAuth } from './authStore'
 import type {
   LoginResponse,
-  LogoutResponse,
   RefreshResponse,
   RegisterResponse,
 } from '@/types/responses/authResponses'
@@ -34,33 +32,19 @@ export const publicApi = axios.create({
 export async function refreshAccessToken(): Promise<RefreshResponse> {
   try {
     const response = await publicApi.post<RefreshResponse>(
-      'public/refresh',
+      'auth/refresh-token',
       {},
       { withCredentials: true },
     )
 
-    const accessToken = response.data.data.accessToken
-
-    const decoded = decode(accessToken, { complete: true }) as {
-      payload?: { sub?: string | (() => string) }
-    } | null
-    let userId = ''
-    if (decoded?.payload?.sub) {
-      const sub = decoded.payload.sub
-      userId = typeof sub === 'function' ? sub() : sub
-    }
-    setAuth(accessToken, userId)
+    const accessToken = response.data.accessToken
+    setAuth(accessToken, response.data.userId)
 
     return response.data
   } catch (error: any) {
     const originalRequest = error.config
-    const errMessage = error.response.data.message as string
-    if (!errMessage) return Promise.reject(error)
-    if (
-      (errMessage.toLocaleLowerCase().includes('missing cookie rt_refresh') ||
-        errMessage.toLocaleLowerCase().includes('invalid refresh token')) &&
-      !originalRequest._retry
-    ) {
+
+    if (!originalRequest._retry) {
       clearAuth()
       window.location.href = '/'
       toast.error('Something goes wrong! Please try to login!')
@@ -81,16 +65,13 @@ api.interceptors.response.use(
   },
   async (error): Promise<any> => {
     const originalRequest = error.config
-    const errMessage = error.response.data.message as string
-    if (!errMessage) return Promise.reject(error)
-    if (
-      errMessage.toLocaleLowerCase().includes('invalid access token') &&
-      !originalRequest._retry
-    ) {
+    if (!originalRequest._retry) {
       originalRequest._retry = true
       await refreshAccessToken()
       return api(originalRequest)
     }
+    clearAuth()
+    window.location.href = '/'
     return Promise.reject(error)
   },
 )
@@ -98,38 +79,24 @@ api.interceptors.response.use(
 export async function register(
   payload: RegisterPayload,
 ): Promise<RegisterResponse> {
-  const response = await publicApi.post<RegisterResponse>(
-    'public/register',
-    payload,
-  )
+  const response = await publicApi.post<RegisterResponse>('users', payload)
   return response.data
 }
 
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
-  const response = await publicApi.post<LoginResponse>(
-    'public/login',
-    payload,
-    { withCredentials: true },
-  )
-  const accessToken = response.data.data.accessToken
-
-  const decoded = decode(accessToken, { complete: true }) as {
-    payload?: { sub?: string | (() => string) }
-  } | null
-  let userId = ''
-  if (decoded?.payload?.sub) {
-    const sub = decoded.payload.sub
-    userId = typeof sub === 'function' ? sub() : sub
-  }
-  setAuth(accessToken, userId)
+  const response = await publicApi.post<LoginResponse>('auth/login', payload, {
+    withCredentials: true,
+  })
+  const accessToken = response.data.accessToken
+  setAuth(accessToken, response.data.userId)
 
   return response.data
 }
 
-export async function logout(): Promise<LogoutResponse> {
+export async function logout(): Promise<string> {
   try {
-    const response = await api.post<LogoutResponse>(
-      'user/logout',
+    const response = await api.post<string>(
+      'auth/logout',
       {},
       { withCredentials: true },
     )
@@ -139,10 +106,7 @@ export async function logout(): Promise<LogoutResponse> {
     const originalRequest = error.config
     const errMessage = error.response.data.message as string
     if (!errMessage) return Promise.reject(error)
-    if (
-      errMessage.toLocaleLowerCase().includes('missing cookie rt_logout') &&
-      !originalRequest._retry
-    ) {
+    if (!originalRequest._retry) {
       clearAuth()
       window.location.href = '/'
     }

@@ -1,7 +1,6 @@
 export type UserUpdatePayload = {
-  displayName: string
+  username: string
   email: string
-  file: File | null
 }
 
 export type ChangePasswordPayload = {
