@@ -92,8 +92,8 @@ void Door_handleCommand(const char* payload) {
             tempPtr = strchr(tempPtr, ':');
             humPtr = strchr(humPtr, ':');
             if (tempPtr && humPtr) {
-                float temp = atof(tempPtr + 1);
-                float hum = atof(humPtr + 1);
+                double temp = atof(tempPtr + 1);
+                double hum = atof(humPtr + 1);
                 
                 LCD_showTempHumidity(temp, hum);
                 Serial.printf("[DOOR] DHT: %.1fC, %.1f%%\n", temp, hum);

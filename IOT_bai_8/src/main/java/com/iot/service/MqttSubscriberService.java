@@ -3,10 +3,10 @@ package com.iot.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iot.entity.DhtSensor;
+import com.iot.entity.Door;
+import com.iot.entity.GasSensor;
 import com.iot.entity.PirSensor;
-import com.iot.repository.DeviceRepository;
-import com.iot.repository.DhtSensorRepository;
-import com.iot.repository.PirSensorRepository;
+import com.iot.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.*;
@@ -28,6 +28,9 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private final DhtSensorRepository DhtSensorRepository;
     private final PirSensorRepository pirSensorRepository;
     private final DeviceRepository deviceRepository;
+    private final GasSensorRepository gasSensorRepository;
+    private final RfidRepository rfidRepository;
+    private final DoorRepository doorRepository;
     private final SseService sseService;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -211,19 +214,31 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private void handleGasEvent(JsonNode json, String deviceId) {
         String event = json.get("event").asText();
         int state = json.get("state").asInt();
+        String type = json.get("type").asText();
         String timestamp = json.get("timestamp").asText();
-        
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
         if ("alert".equals(event)) {
             int value = json.has("value") ? json.get("value").asInt() : 0;
-            log.error("🚨 GAS ALERT! | Value: {} | Time: {}", value, timestamp);
-            
+            log.error("GAS ALERT! | Value: {} | Time: {}", value, timestamp);
+
+            GasSensor gasSensor = new GasSensor();
+            gasSensor.setDeviceId(Integer.parseInt(deviceId));
+            gasSensor.setState(state);
+            gasSensor.setValue(value);
+            gasSensor.setEvent(event);
+            gasSensor.setType(type);
+            gasSensor.setReceivedAt(localDateTime);
+            gasSensorRepository.save(gasSensor);
+
+            sseService.broadcastGasData(gasSensor);
+
             // TODO: Gửi cảnh báo khẩn cấp (SMS, email, push notification)
             // TODO: Tự động gửi lệnh mở cửa để thông gió
             // TODO: Lưu vào database với mức độ ưu tiên cao
             // TODO: Kích hoạt còi báo động nếu có
             
         } else if ("clear".equals(event)) {
-            log.info("✅ Gas alert cleared | Time: {}", timestamp);
+            log.info("Gas alert cleared | Time: {}", timestamp);
             
             // TODO: Gửi thông báo an toàn
             // TODO: Cập nhật trạng thái hệ thống
@@ -257,11 +272,38 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private void handleDoor1Message(JsonNode json, String deviceId) {
         // TODO: Implement door message handling based on door firmware specs
         log.info("🚪 Door message: {}", json);
-        
-        // Placeholder for door logic
-        // - Trạng thái khóa/mở
-        // - RFID scan events
-        // - Nút bấm events
-        // - Các cảnh báo bảo mật
+
+        String type = json.has("type") ? json.get("type").asText() : "";
+        String event = json.has("event") ? json.get("event").asText() : "";
+        String uid = json.has("uid") ? json.get("uid").asText() : "";
+        String timestamp = json.has("timestamp") ? json.get("timestamp").asText() : "";
+        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
+        if(rfidRepository.existsByUidAndDeviceId(uid, Integer.parseInt(deviceId))){
+            Door door = new Door();
+            door.setDeviceId(Integer.parseInt(deviceId));
+            door.setUid(uid);
+            door.setEvent(event);
+            door.setType(type);
+            door.setAction("OPEN");
+            door.setReceiveAt(localDateTime);
+            doorRepository.save(door);
+
+            // Đẩy event vào MQTT
+        }
+        else {
+            Door door = new Door();
+            door.setDeviceId(Integer.parseInt(deviceId));
+            door.setUid(uid);
+            door.setEvent(event);
+            door.setType(type);
+            door.setAction("DENY");
+            door.setReceiveAt(localDateTime);
+            doorRepository.save(door);
+            // Đẩy event vào MQTT
+        }
+
+        //
+
     }
+
 }

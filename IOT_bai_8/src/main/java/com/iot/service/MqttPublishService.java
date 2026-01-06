@@ -22,4 +22,8 @@ public class MqttPublishService {
         publisherClient.publish(topic, message);
         log.info("Đã publish | topic: {} | payload: {}", topic, payload);
     }
+
+    public void publishCommandDoor(String topic, String payload) throws MqttException {
+        MqttMessage message = new MqttMessage(payload.getBytes());
+    }
 }
