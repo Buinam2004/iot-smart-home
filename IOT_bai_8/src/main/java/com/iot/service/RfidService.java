@@ -17,6 +17,7 @@ public class RfidService implements IRfidService {
         Rfid rfid = new Rfid();
         rfid.setUid(uid);
         rfid.setUserId(userId);
+        rfid.setDeviceId(deviceId);
         rfidRepository.save(rfid);
 
         return rfid;

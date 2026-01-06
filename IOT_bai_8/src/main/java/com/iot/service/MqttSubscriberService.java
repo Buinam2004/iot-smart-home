@@ -32,6 +32,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private final RfidRepository rfidRepository;
     private final DoorRepository doorRepository;
     private final SseService sseService;
+    private final MqttPublishService mqttPublishService;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -289,6 +290,13 @@ public class MqttSubscriberService implements MqttCallbackExtended {
             doorRepository.save(door);
 
             // Đẩy event vào MQTT
+            try {
+                mqttPublishService.sendDoorCommand(deviceId, "OPEN");
+            }
+            catch (MqttException e) {
+                e.printStackTrace();
+            }
+
         }
         else {
             Door door = new Door();
@@ -300,9 +308,13 @@ public class MqttSubscriberService implements MqttCallbackExtended {
             door.setReceiveAt(localDateTime);
             doorRepository.save(door);
             // Đẩy event vào MQTT
+            try{
+                mqttPublishService.sendDoorCommand(deviceId, "DENY");
+            }
+            catch (MqttException e) {
+                e.printStackTrace();
+            }
         }
-
-        //
 
     }
 
