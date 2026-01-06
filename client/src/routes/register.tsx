@@ -34,7 +34,6 @@ function RegisterPage() {
   const form = useForm({
     defaultValues: {
       username: '',
-      displayName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -46,9 +45,9 @@ function RegisterPage() {
     validators: {
       onSubmitAsync: async ({ value, formApi }) => {
         // Strip confirmPassword
-        const { username, displayName, email, password } = value
+        const { username, email, password } = value
         try {
-          await mutation.mutateAsync({ username, displayName, email, password })
+          await mutation.mutateAsync({ username, email, password })
           return undefined
         } catch (e: any) {
           console.error(e)
@@ -131,47 +130,6 @@ function RegisterPage() {
                           : 'border-gray-300'
                       }`}
                       placeholder="Nhập tên đăng nhập"
-                    />
-                    {!field.state.meta.isValid && (
-                      <p className="mt-2 text-sm text-red-600">
-                        {field.state.meta.errors.join(', ')}
-                      </p>
-                    )}
-                  </div>
-                </>
-              )}
-            </form.Field>
-
-            {/* Display Name */}
-            <form.Field
-              name="displayName"
-              validators={{
-                onDynamic: ({ value }) =>
-                  !value ? 'Họ và tên là bắt buộc' : undefined,
-              }}
-            >
-              {(field) => (
-                <>
-                  <label
-                    htmlFor={field.name}
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Họ và tên
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id={field.name}
-                      name={field.name}
-                      type="text"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                      className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        !field.state.meta.isValid
-                          ? 'border-red-300'
-                          : 'border-gray-300'
-                      }`}
-                      placeholder="Nhập họ và tên"
                     />
                     {!field.state.meta.isValid && (
                       <p className="mt-2 text-sm text-red-600">

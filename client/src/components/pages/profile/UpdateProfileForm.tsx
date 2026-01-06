@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useForm } from '@tanstack/react-form'
 import { toast } from 'react-toastify'
+import { useNavigate, useRouteContext } from '@tanstack/react-router'
 
 import type { FC } from 'react'
 
@@ -13,51 +13,35 @@ import { generalFormErrorHandler } from '@/utils/errorHandling'
 
 interface UserUpdateFormProps {
   initialPayload: UserUpdatePayload
-  avatar: string | null
 }
 
-const UpdateProfileForm: FC<UserUpdateFormProps> = ({
-  initialPayload,
-  avatar,
-}) => {
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const hiddenFileInputRef = useRef<HTMLInputElement | null>(null)
+const UpdateProfileForm: FC<UserUpdateFormProps> = ({ initialPayload }) => {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const { userId, logout } = useRouteContext({
+    from: '__root__',
+    select: (ctx) => ({
+      userId: ctx.auth.userId,
+      logout: ctx.auth.logout,
+    }),
+  })
 
   const updateProfileMutation = useMutation({
     mutationKey: ['updateProfile'],
     mutationFn: async (payload: UserUpdatePayload): Promise<UserResponse> => {
-      const formData = new FormData()
-      formData.append(
-        'payload',
-        new Blob(
-          [
-            JSON.stringify({
-              displayName: payload.displayName,
-              email: payload.email,
-            }),
-          ],
-          { type: 'application/json' },
-        ),
-      )
-      if (payload.file) formData.append('file', payload.file)
-
-      const res = await api.put<UserResponse>('user', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      const res = await api.patch<UserResponse>(`users/${userId}`, payload)
       return res.data
+    },
+    onSuccess: async () => {
+      await logout()
+      navigate({ to: '/login', search: { redirectLink: '/' } })
     },
   })
 
   const updateProfileForm = useForm({
     defaultValues: {
-      displayName: initialPayload.displayName,
+      username: initialPayload.username,
       email: initialPayload.email,
-      file: initialPayload.file,
-    } as {
-      displayName: string
-      email: string
-      file: File | null
     },
     validators: {
       onSubmitAsync: async ({ value, formApi }) => {
@@ -80,17 +64,6 @@ const UpdateProfileForm: FC<UserUpdateFormProps> = ({
       toast.success('Update profile successfully')
     },
   })
-
-  useEffect(() => {
-    setAvatarPreview(avatar)
-  }, [avatar])
-
-  function handleFileChange(file: File | null) {
-    if (!file) return
-    const url = URL.createObjectURL(file)
-    setAvatarPreview(url)
-  }
-
   return (
     <form
       onSubmit={(e) => {
@@ -98,23 +71,12 @@ const UpdateProfileForm: FC<UserUpdateFormProps> = ({
         updateProfileForm.handleSubmit()
       }}
     >
-      <h2 className="text-md font-semibold mb-4">Update profile</h2>
-      <div className="flex flex-col items-center mb-6">
-        <div className="w-28 h-28 rounded-full overflow-hidden mb-3 border-2">
-          <img
-            src={avatarPreview ?? avatar ?? undefined}
-            alt="avatar center"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <p className="text-sm text-gray-500">Avatar Preview</p>
-      </div>
-      <div className="py-2 border-t gap-4 max-w-2xl">
-        <updateProfileForm.Field name="displayName">
+      <div className="py-2 gap-4 max-w-2xl">
+        <updateProfileForm.Field name="username">
           {(field) => (
             <>
               <label className="flex flex-col mb-2">
-                <span className="text-sm font-medium mb-1">Name</span>
+                <span className="text-sm font-medium mb-1">Username</span>
                 <input
                   name={field.name}
                   type="text"
@@ -140,33 +102,6 @@ const UpdateProfileForm: FC<UserUpdateFormProps> = ({
                 className="p-2 border rounded-md"
               />
             </label>
-          )}
-        </updateProfileForm.Field>
-      </div>
-
-      <div className="w-full max-w-2xl">
-        <button
-          type="button"
-          onClick={() => hiddenFileInputRef.current?.click()}
-          className="w-full px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-200 cursor-pointer"
-        >
-          Edit avatar - PNG or JPG
-        </button>
-        {/* Hidden file input */}
-        <updateProfileForm.Field name="file">
-          {(field) => (
-            <input
-              name={field.name}
-              ref={hiddenFileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files ? e.target.files[0] : null
-                updateProfileForm.setFieldValue('file', file)
-                handleFileChange(file)
-              }}
-              className="hidden"
-            />
           )}
         </updateProfileForm.Field>
       </div>

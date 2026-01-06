@@ -1,10 +1,6 @@
-import type BaseResponse from './BaseResponse'
-
-export interface UserData {
+export interface UserResponse {
+  userId: number
   username: string
-  displayName: string
   email: string
-  avatar: string | null
+  role: string
 }
-
-export type UserResponse = BaseResponse<UserData>

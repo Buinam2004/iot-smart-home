@@ -1,13 +1,22 @@
-import type BaseResponse from './BaseResponse'
-
-interface AccessTokenData {
+export interface RefreshResponse {
+  userId: number
+  username: string
+  role: string
   accessToken: string
+  expiresIn: number
 }
 
-export type RegisterResponse = BaseResponse<null>
+export interface RegisterResponse {
+  userId: number
+  username: string
+  email: string
+  role: string
+}
 
-export type LoginResponse = BaseResponse<AccessTokenData>
-
-export type RefreshResponse = BaseResponse<AccessTokenData>
-
-export type LogoutResponse = BaseResponse<null>
+export interface LoginResponse {
+  userId: number
+  username: string
+  role: string
+  accessToken: string
+  expiresIn: number
+}

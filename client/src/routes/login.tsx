@@ -37,6 +37,9 @@ function Login() {
 
   const mutation = useMutation<LoginResponse, unknown, LoginPayload>({
     mutationFn: (payload) => login(payload),
+    onError: () => {
+      toast.error('Logging in Fail')
+    },
   })
 
   const form = useForm({

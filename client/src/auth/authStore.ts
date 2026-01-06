@@ -3,7 +3,7 @@ import { Store } from '@tanstack/react-store'
 type AuthState = {
   accessToken: string | null
   isAuthenticated: boolean
-  userId: string | null
+  userId: number | null
 }
 
 export const authStore = new Store<AuthState>({
@@ -30,7 +30,7 @@ authStore.subscribe((authStoreObject) => {
   )
 })
 
-export function setAuth(token: string, userId: string) {
+export function setAuth(token: string, userId: number) {
   authStore.setState({ accessToken: token, isAuthenticated: true, userId })
 }
 
