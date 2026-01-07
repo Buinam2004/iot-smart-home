@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { controlLed, controlFan } from '../api/deviceControlApi'
 
 export interface DeviceState {
   light: boolean
@@ -9,21 +10,54 @@ export interface DeviceState {
 export interface DeviceControlProps {
   initial?: Partial<DeviceState>
   onChange?: (s: DeviceState) => void
+  lightDeviceId?: number
+  fanDeviceId?: number
 }
 
-export default function DeviceControl({ initial, onChange }: DeviceControlProps) {
+export default function DeviceControl({
+  initial,
+  onChange,
+  lightDeviceId = 1,
+  fanDeviceId = 3,
+}: DeviceControlProps) {
   const [state, setState] = useState<DeviceState>(() => ({
     light: initial?.light ?? false,
     fan: initial?.fan ?? false,
     doorOpen: initial?.doorOpen ?? false,
   }))
+  const [pending, setPending] = useState<Partial<Record<keyof DeviceState, boolean>>>({})
 
   useEffect(() => {
     onChange?.(state)
   }, [state, onChange])
 
   function toggle<K extends keyof DeviceState>(key: K) {
-    setState((s) => ({ ...s, [key]: !s[key] }))
+    // Prevent duplicate requests for the same control
+    if (pending[key]) return
+
+    setState((prev) => {
+      const next = { ...prev, [key]: !prev[key] } as DeviceState
+
+      setPending((p) => ({ ...p, [key]: true }))
+
+      ;(async () => {
+        try {
+          if (key === 'light') {
+            await controlLed({ deviceId: lightDeviceId, state: next.light ? 1 : 0 })
+          } else if (key === 'fan') {
+            await controlFan({ deviceId: fanDeviceId, state: next.fan ? 1 : 0 })
+          }
+        } catch (err) {
+          console.error('Device control failed', err)
+          // revert optimistic update
+          setState((s) => ({ ...s, [key]: !next[key] }))
+        } finally {
+          setPending((p) => ({ ...p, [key]: false }))
+        }
+      })()
+
+      return next
+    })
   }
 
   return (
