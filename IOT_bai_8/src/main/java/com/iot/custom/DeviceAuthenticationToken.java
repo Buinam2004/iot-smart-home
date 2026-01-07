@@ -1,10 +1,12 @@
 package com.iot.custom;
 
+import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
+@Getter
 public class DeviceAuthenticationToken extends AbstractAuthenticationToken {
 
     private final Integer deviceId;
@@ -13,10 +15,6 @@ public class DeviceAuthenticationToken extends AbstractAuthenticationToken {
         super(List.of(new SimpleGrantedAuthority("ROLE_DEVICE")));
         this.deviceId = deviceId;
         setAuthenticated(true);
-    }
-
-    public Integer getDeviceId() {
-        return deviceId;
     }
 
     @Override

@@ -4,16 +4,16 @@ import com.iot.dto.AuthenticateDeviceDTO;
 import com.iot.dto.LoginRequestDTO;
 
 import com.iot.service.IAuthenticationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthenticationController {
-
-    @Autowired
-    private IAuthenticationService authenticationServicre;
+    private final IAuthenticationService authenticationServicre;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginRequest) {

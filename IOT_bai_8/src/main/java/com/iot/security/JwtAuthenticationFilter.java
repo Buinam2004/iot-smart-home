@@ -38,17 +38,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
         log.info("Request URI: {}", request.getRequestURI());
-        String path = request.getRequestURI(); // Lấy đường dẫn yêu cầu
+        String path = request.getRequestURI();
 
-        // Bỏ qua các endpoint public
         if (path.startsWith("/api/auth/")
                 || path.equals("/api/auth") )
         {
-            filterChain.doFilter(request, response); // request được thông qua
+            filterChain.doFilter(request, response);
             return;
         }
         if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            // Nếu đã có xác thực trong SecurityContext, bỏ qua xử lý
             log.info("Security Context: {}", SecurityContextHolder.getContext().getAuthentication());
             filterChain.doFilter(request, response);
             return;
@@ -99,22 +97,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void setAuthentication(String username, HttpServletRequest request) {
-
-        // Tải chi tiết người dùng từ CustomUserDetailsService
-        // Điều này sẽ truy xuất cơ sở dữ liệu để lấy thông tin người dùng
-        // và đảm bảo có đủ thông tin để tạo đối tượng xác thực
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken( // Tạo đối tượng xác thực
-                        userDetails, // principal (chi tiết người dùng)
-                        null, // credentials (mật khẩu, không cần thiết ở đây)
-                        userDetails.getAuthorities() // authorities (quyền của người dùng)
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
                 );
-        // xác định chi tiết về yêu cầu hiện tại vào đối tượng xác thực
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-        // Đặt đối tượng xác thực vào SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 

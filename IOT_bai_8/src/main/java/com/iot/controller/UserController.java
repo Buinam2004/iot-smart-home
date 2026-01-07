@@ -6,6 +6,7 @@ import com.iot.entity.User;
 import com.iot.exception.DuplicateResourceException;
 import com.iot.exception.ResourceNotFoundException;
 import com.iot.service.IUserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class UserController {
-    
-    @Autowired
-    private IUserService userService;
+    private final IUserService userService;
 
     // GET /api/users - Lấy tất cả users
     @GetMapping

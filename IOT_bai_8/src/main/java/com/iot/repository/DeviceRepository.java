@@ -17,7 +17,8 @@ public interface DeviceRepository extends JpaRepository<Device, Integer> {
     @Query("SELECT d FROM Device d JOIN FETCH d.user")
     List<Device> findAllWithUser();
 
-//    @Query("SELECT d FROM Device d WHERE d.id = :id AND d.user.id = :userId")
+    List<Device> findAllByUserId(int userId);
+
     boolean existsByIdAndUserId(Integer id, Integer userId);
 
     boolean existsByIdAndMacAddress( Integer id, String macAddress);

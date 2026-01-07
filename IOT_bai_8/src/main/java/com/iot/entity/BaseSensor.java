@@ -7,10 +7,10 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 
-@MappedSuperclass // Quan trọng: Để JPA biết đây là class chứa các cột dùng chung
+@MappedSuperclass
 @Getter
 @Setter
-public class BaseSensor {
+public abstract class BaseSensor {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Integer id;
