@@ -43,7 +43,7 @@ public class MqttPublishService {
 
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
-            message.setRetained(true);
+//            message.setRetained(true);
 
             publisherClient.publish(topic, message);
             log.info("🚀 Sent Command | Topic: {} | Payload: {}", topic, payload);
@@ -71,15 +71,15 @@ public class MqttPublishService {
             String topic = String.format("iot_smarthome/room1/%s", macAddress);
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
-            message.setRetained(true);
+//            message.setRetained(true);
 
             publisherClient.publish(topic, message);
             log.info("🚀 Sent Command | Topic: {} | Payload: {}", topic, payload);
-            Fan fan = new Fan();
-            fan.setCreatedAt(now);
-            fan.setDeviceId(deviceId);
-            fan.setState(state);
-            fanRepository.save(fan);
+//            Fan fan = new Fan();
+//            fan.setCreatedAt(now);
+//            fan.setDeviceId(deviceId);
+//            fan.setState(state);
+//            fanRepository.save(fan);
 
         } catch (JsonProcessingException e) {
             log.error("Lỗi convert JSON: {}", e.getMessage());
@@ -103,15 +103,15 @@ public class MqttPublishService {
             String topic = String.format("iot_smarthome/room1/%s", macAddress);
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
-            message.setRetained(true);
+//            message.setRetained(true);
 
             publisherClient.publish(topic, message);
             log.info("🚀 Sent Command | Topic: {} | Payload: {}", topic, payload);
-            Led_Pir led_pir = new Led_Pir();
-            led_pir.setCreatedAt(now);
-            led_pir.setDeviceId(deviceId);
-            led_pir.setState(state);
-            led_PirRepository.save(led_pir);
+//            Led_Pir led_pir = new Led_Pir();
+//            led_pir.setCreatedAt(now);
+//            led_pir.setDeviceId(deviceId);
+//            led_pir.setState(state);
+//            led_PirRepository.save(led_pir);
 
         } catch (JsonProcessingException e) {
             log.error("Lỗi convert JSON: {}", e.getMessage());
