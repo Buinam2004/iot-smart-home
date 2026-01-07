@@ -1,33 +1,45 @@
 import {
-  BarChart3Icon,
-  CheckCircleIcon,
-  TrendingUpIcon,
-  UsersIcon,
+  ActivityIcon,
+  BellIcon,
+  GaugeIcon,
+  ShieldCheckIcon,
+  WifiIcon,
+  WrenchIcon,
 } from 'lucide-react'
 import FeatureFragment from './FeatureFragment'
 
 const features = [
   {
-    icon: BarChart3Icon,
-    title: 'Quản lý dự án hiệu quả',
+    icon: WifiIcon,
+    title: 'Realtime SSE',
     description:
-      'Theo dõi tiến độ dự án một cách trực quan với biểu đồ Gantt và dashboard tổng quan.',
+      'Luồng dữ liệu thời gian thực qua Server-Sent Events, mượt mà và ổn định.',
   },
   {
-    icon: CheckCircleIcon,
-    title: 'Quản lý task chi tiết',
+    icon: GaugeIcon,
+    title: 'Đa cảm biến',
     description:
-      'Tạo, phân công và theo dõi các task với nhiều trạng thái khác nhau.',
+      'DHT (nhiệt/ẩm), PIR (chuyển động), Gas (cảnh báo) và hơn nữa.',
   },
   {
-    icon: UsersIcon,
-    title: 'Cộng tác nhóm',
-    description: 'Phân quyền và quản lý thành viên dự án một cách dễ dàng.',
+    icon: ActivityIcon,
+    title: 'Biểu đồ nhẹ',
+    description: 'Sparkline trực quan giúp theo dõi xu hướng nhiệt độ/độ ẩm.',
   },
   {
-    icon: TrendingUpIcon,
-    title: 'Báo cáo tự động',
-    description: 'Nhận báo cáo tiến độ tự động qua email theo lịch trình.',
+    icon: WrenchIcon,
+    title: 'Điều khiển thiết bị',
+    description: 'Quạt, LED PIR… thao tác tức thời và ghi nhận sự kiện.',
+  },
+  {
+    icon: BellIcon,
+    title: 'Cảnh báo tức thì',
+    description: 'Phát hiện chuyển động, rò rỉ khí, gửi cảnh báo liền tay.',
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: 'Bảo mật đầy đủ',
+    description: 'Đăng nhập an toàn, làm mới token, phân quyền linh hoạt.',
   },
 ]
 
@@ -40,10 +52,10 @@ const Features = () => {
             Tính năng nổi bật
           </h2>
           <p className="text-xl text-gray-600">
-            Tất cả những gì bạn cần để quản lý dự án hiệu quả
+            Mọi thứ bạn cần cho nhà thông minh
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <FeatureFragment
               key={index}

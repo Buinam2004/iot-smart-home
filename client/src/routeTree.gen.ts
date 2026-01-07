@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
-import { Route as LogsRouteImport } from './routes/logs'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DeviceControlRouteImport } from './routes/device-control'
 import { Route as AuthRouteImport } from './routes/_auth'
@@ -21,11 +20,6 @@ import { Route as AuthDashboardRouteImport } from './routes/_auth/dashboard'
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LogsRoute = LogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -62,7 +56,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/device-control': typeof DeviceControlRoute
   '/login': typeof LoginRoute
-  '/logs': typeof LogsRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthDashboardRoute
   '/profile': typeof AuthProfileRoute
@@ -71,7 +64,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/device-control': typeof DeviceControlRoute
   '/login': typeof LoginRoute
-  '/logs': typeof LogsRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthDashboardRoute
   '/profile': typeof AuthProfileRoute
@@ -82,7 +74,6 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/device-control': typeof DeviceControlRoute
   '/login': typeof LoginRoute
-  '/logs': typeof LogsRoute
   '/register': typeof RegisterRoute
   '/_auth/dashboard': typeof AuthDashboardRoute
   '/_auth/profile': typeof AuthProfileRoute
@@ -93,7 +84,6 @@ export interface FileRouteTypes {
     | '/'
     | '/device-control'
     | '/login'
-    | '/logs'
     | '/register'
     | '/dashboard'
     | '/profile'
@@ -102,7 +92,6 @@ export interface FileRouteTypes {
     | '/'
     | '/device-control'
     | '/login'
-    | '/logs'
     | '/register'
     | '/dashboard'
     | '/profile'
@@ -112,7 +101,6 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/device-control'
     | '/login'
-    | '/logs'
     | '/register'
     | '/_auth/dashboard'
     | '/_auth/profile'
@@ -123,7 +111,6 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   DeviceControlRoute: typeof DeviceControlRoute
   LoginRoute: typeof LoginRoute
-  LogsRoute: typeof LogsRoute
   RegisterRoute: typeof RegisterRoute
 }
 
@@ -134,13 +121,6 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/logs': {
-      id: '/logs'
-      path: '/logs'
-      fullPath: '/logs'
-      preLoaderRoute: typeof LogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -205,7 +185,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   DeviceControlRoute: DeviceControlRoute,
   LoginRoute: LoginRoute,
-  LogsRoute: LogsRoute,
   RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport

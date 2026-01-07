@@ -2,6 +2,8 @@ package com.iot.service;
 
 
 import com.iot.entity.*;
+import com.iot.repository.DeviceRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -13,8 +15,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SseService {
     private final Map<String, CopyOnWriteArrayList<SseEmitter>> deviceEmitters = new ConcurrentHashMap<>();
+    private final DeviceRepository deviceRepository;
 
     public SseEmitter createConnection(String deviceId) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
@@ -40,27 +44,32 @@ public class SseService {
     }
 
     public void broadcastDhtData(DhtSensor data) {
-        String deviceId = String.valueOf(data.getDeviceId());
+        Device device = deviceRepository.findById(data.getDeviceId()).orElseThrow(RuntimeException::new);
+        String deviceId = String.valueOf(device.getMacAddress());
         sendToDevice(deviceId, "dht-data", data);
     }
 
     public void broadcastPirData(PirSensor data) {
-        String deviceId = String.valueOf(data.getDeviceId());
+        Device device = deviceRepository.findById(data.getDeviceId()).orElseThrow(RuntimeException::new);
+        String deviceId = String.valueOf(device.getMacAddress());
         sendToDevice(deviceId, "pir-data", data);
     }
 
     public void broadcastGasData(GasSensor data) {
-        String deviceId = String.valueOf(data.getDeviceId());
+        Device device = deviceRepository.findById(data.getDeviceId()).orElseThrow(RuntimeException::new);
+        String deviceId = String.valueOf(device.getMacAddress());
         sendToDevice(deviceId, "gas-data", data);
     }
 
     public void broadcastFanData(Fan data) {
-        String deviceId = String.valueOf(data.getDeviceId());
+        Device device = deviceRepository.findById(data.getDeviceId()).orElseThrow(RuntimeException::new);
+        String deviceId = String.valueOf(device.getMacAddress());
         sendToDevice(deviceId, "fan-data", data);
     }
 
     public void broadcastLed_PirData(Led_Pir data){
-        String deviceId = String.valueOf(data.getDeviceId());
+        Device device = deviceRepository.findById(data.getDeviceId()).orElseThrow(RuntimeException::new);
+        String deviceId = String.valueOf(device.getMacAddress());
         sendToDevice(deviceId, "led-pir-data", data);
     }
 

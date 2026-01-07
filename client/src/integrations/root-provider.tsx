@@ -4,11 +4,11 @@ export function getContext() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        refetchOnWindowFocus: false,
-        refetchOnMount: false,
+        refetchOnWindowFocus: true,
+        refetchOnMount: true,
         refetchOnReconnect: true,
         retry: 1,
-        staleTime: 5 * 60 * 1000,
+        staleTime: 1 * 60 * 1000,
       },
     },
   })

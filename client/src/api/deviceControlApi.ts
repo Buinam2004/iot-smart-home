@@ -1,82 +1,42 @@
-export type DeviceControlPayload = {
+import { toast } from 'react-toastify'
+import { api } from '@/auth/authApi'
+
+export interface DeviceControlPayload {
   deviceId: number
   state: number
 }
 
-import { authStore } from '../auth/authStore'
+export interface DoorControlPayload extends DeviceControlPayload {
+  action: string
+}
 
-const BASE_API_URL: string = import.meta.env.VITE_API_URL || '/api/'
-const BASE = BASE_API_URL.endsWith('/') ? BASE_API_URL : `${BASE_API_URL}/`
-
-const inFlight = new Map<string, Promise<any>>()
-
-async function postJson<T = any>(url: string, body: unknown): Promise<T> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+export async function controlLed(payload: DeviceControlPayload) {
+  try {
+    const res = await api.post('led_pir/publish', payload)
+  } catch {
+    toast.error('Toggle unsuccessfully')
   }
-
-  // Prefer in-memory authStore token, fallback to localStorage
-  const token = authStore?.state?.accessToken ?? (() => {
-    try {
-      const saved = window.localStorage.getItem('authStore')
-      if (!saved) return null
-      const parsed = JSON.parse(saved)
-      return parsed?.accessToken ?? null
-    } catch (e) {
-      return null
-    }
-  })()
-
-  if (token) headers.Authorization = `Bearer ${token}`
-
-  const key = `${url}|${JSON.stringify(body)}`
-  if (inFlight.has(key)) {
-    // Return the existing promise to avoid duplicate network calls
-    return inFlight.get(key) as Promise<T>
+}
+export async function controlFan(payload: DeviceControlPayload) {
+  try {
+    const res = await api.post('fan/publish', payload)
+  } catch {
+    toast.error('Toggle unsuccessfully')
   }
-
-  const p = (async (): Promise<T> => {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    })
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => '')
-      throw new Error(`POST ${url} failed: ${res.status} ${res.statusText} ${text}`)
-    }
-
-    const ct = res.headers.get('content-type') || ''
-    if (ct.includes('application/json')) return res.json()
-    return undefined as unknown as T
-  })()
-
-  inFlight.set(key, p)
-  // cleanup when done
-  p.finally(() => inFlight.delete(key))
-  return p
 }
 
-/**
- * Control LED (PIR) device
- * POST /api/led_pir
- * body: { deviceId: number, state: number }
- */
-export function controlLed(payload: DeviceControlPayload) {
-  return postJson(`${BASE}led_pir`, payload)
+export async function controlDoor(payload: DoorControlPayload) {
+  try {
+    const res = await api.post('door/publish', payload)
+  } catch {
+    toast.error('Toggle unsuccessfully')
+  }
 }
 
-/**
- * Control fan device
- * POST /api/fan/publish
- * body: { deviceId: number, state: number }
- */
-export function controlFan(payload: DeviceControlPayload) {
-  return postJson(`${BASE}fan/publish`, payload)
-}
-
-export default {
-  controlLed,
-  controlFan,
+export async function clearGas(deviceId: number) {
+  try {
+    const res = await api.post('gas/publish', deviceId)
+  } catch {
+    toast.error('Toggle unsuccessfully')
+  }
 }

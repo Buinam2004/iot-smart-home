@@ -9,7 +9,7 @@ const CallToAction: React.FC = () => {
           Sẵn sàng bắt đầu?
         </h2>
         <p className="text-xl text-blue-100 mb-8">
-          Tạo tài khoản miễn phí và trải nghiệm ngay hôm nay
+          Đăng ký miễn phí và trải nghiệm ngay
         </p>
         <Link
           to="/register"

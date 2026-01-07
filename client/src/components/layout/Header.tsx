@@ -66,12 +66,6 @@ export default function Header() {
               >
                 Device Control
               </Link>
-              <Link
-                to="/logs"
-                className="text-gray-700 hover:text-blue-600 font-medium"
-              >
-                Logs
-              </Link>
             </div>
           )}
 
