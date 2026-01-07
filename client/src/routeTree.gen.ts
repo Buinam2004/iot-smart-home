@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LogsRouteImport } from './routes/logs'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DeviceControlRouteImport } from './routes/device-control'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthProfileRouteImport } from './routes/_auth/profile'
@@ -21,9 +23,19 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LogsRoute = LogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeviceControlRoute = DeviceControlRouteImport.update({
+  id: '/device-control',
+  path: '/device-control',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -48,14 +60,18 @@ const AuthDashboardRoute = AuthDashboardRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/device-control': typeof DeviceControlRoute
   '/login': typeof LoginRoute
+  '/logs': typeof LogsRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthDashboardRoute
   '/profile': typeof AuthProfileRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/device-control': typeof DeviceControlRoute
   '/login': typeof LoginRoute
+  '/logs': typeof LogsRoute
   '/register': typeof RegisterRoute
   '/dashboard': typeof AuthDashboardRoute
   '/profile': typeof AuthProfileRoute
@@ -64,21 +80,39 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteWithChildren
+  '/device-control': typeof DeviceControlRoute
   '/login': typeof LoginRoute
+  '/logs': typeof LogsRoute
   '/register': typeof RegisterRoute
   '/_auth/dashboard': typeof AuthDashboardRoute
   '/_auth/profile': typeof AuthProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/dashboard' | '/profile'
+  fullPaths:
+    | '/'
+    | '/device-control'
+    | '/login'
+    | '/logs'
+    | '/register'
+    | '/dashboard'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/dashboard' | '/profile'
+  to:
+    | '/'
+    | '/device-control'
+    | '/login'
+    | '/logs'
+    | '/register'
+    | '/dashboard'
+    | '/profile'
   id:
     | '__root__'
     | '/'
     | '/_auth'
+    | '/device-control'
     | '/login'
+    | '/logs'
     | '/register'
     | '/_auth/dashboard'
     | '/_auth/profile'
@@ -87,7 +121,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
+  DeviceControlRoute: typeof DeviceControlRoute
   LoginRoute: typeof LoginRoute
+  LogsRoute: typeof LogsRoute
   RegisterRoute: typeof RegisterRoute
 }
 
@@ -100,11 +136,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/logs': {
+      id: '/logs'
+      path: '/logs'
+      fullPath: '/logs'
+      preLoaderRoute: typeof LogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/device-control': {
+      id: '/device-control'
+      path: '/device-control'
+      fullPath: '/device-control'
+      preLoaderRoute: typeof DeviceControlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
@@ -153,7 +203,9 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
+  DeviceControlRoute: DeviceControlRoute,
   LoginRoute: LoginRoute,
+  LogsRoute: LogsRoute,
   RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
