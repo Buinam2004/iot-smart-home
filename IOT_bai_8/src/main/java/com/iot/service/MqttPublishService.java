@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iot.dto.DeviceState;
 import com.iot.dto.DoorCommand;
+import com.iot.dto.GasActionDTO;
 import com.iot.entity.Device;
 import com.iot.entity.Fan;
+import com.iot.entity.GasSensor;
 import com.iot.entity.Led_Pir;
 import com.iot.repository.DeviceRepository;
 import com.iot.repository.FanRepository;
@@ -101,6 +103,28 @@ public class MqttPublishService {
             led_pir.setDeviceId(deviceId);
             led_pir.setState(state);
             led_PirRepository.save(led_pir);
+
+        } catch (JsonProcessingException e) {
+            log.error("Lỗi convert JSON: {}", e.getMessage());
+        } catch (MqttException e) {
+            log.error("Lỗi Publish MQTT: {}", e.getMessage());
+        }
+    }
+
+    public void send_Gas(int deviceId) {
+        try{
+            Optional<Device> deviceA = deviceRepository.findById(deviceId);
+            String macAddress = deviceA.get().getMacAddress();
+            LocalDateTime  now = LocalDateTime.now();
+            GasActionDTO deviceState = new GasActionDTO("command", "gas", "clear");
+            String payload = objectMapper.writeValueAsString(deviceState);
+
+            String topic = String.format("iot-smarthome/room1/%s", macAddress);
+            MqttMessage message = new MqttMessage(payload.getBytes());
+            message.setQos(1);
+
+            publisherClient.publish(topic, message);
+            log.info("Sent Command | Topic: {} | Payload: {}", topic, payload);
 
         } catch (JsonProcessingException e) {
             log.error("Lỗi convert JSON: {}", e.getMessage());
