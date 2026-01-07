@@ -34,7 +34,7 @@ public class MqttPublishService {
     private final DeviceRepository deviceRepository;
 
     public void sendDoorCommand(String macAddress, String action) throws MqttException {
-        DoorCommand command = new DoorCommand("command", "door", action.toUpperCase());
+        DoorCommand command = new DoorCommand("command", "door", action.toLowerCase());
         try {
             // 2. Chuyển Object thành JSON String
             String payload = objectMapper.writeValueAsString(command);
@@ -62,10 +62,11 @@ public class MqttPublishService {
                 log.error("Device with ID {} not found", deviceId);
                 return;
             }
-            log.info("Dinh Quoc Dat");
+            log.info("Dinh Quoc Dat check hoan thanh kiem tra id device trong sendFanCommand");
             String macAddress = device.get().getMacAddress();
+            log.info("Dinh quoc dat mac address trong sendFanCommand: {}", macAddress);
             LocalDateTime  now = LocalDateTime.now();
-            DeviceState deviceState = new DeviceState("device", "fan", state, now);
+            DeviceState deviceState = new DeviceState("command", "fan", state);
             String payload = objectMapper.writeValueAsString(deviceState);
 
             String topic = String.format("iot-smarthome/room1/%s", macAddress);
@@ -88,6 +89,40 @@ public class MqttPublishService {
         }
     }
 
+    public void sendDoorCommand(Integer deviceId, int state, String action) throws MqttException {
+        try{
+            Optional<Device> device = deviceRepository.findById(deviceId);
+            if(device == null){
+                log.error("Device with ID {} not found", deviceId);
+                return;
+            }
+            log.info("Dinh Quoc Dat");
+            String macAddress = device.get().getMacAddress();
+            log.info("Mac Address: {}", macAddress);
+            DoorCommand command = new DoorCommand("command", "door", action.toLowerCase());
+            String payload = objectMapper.writeValueAsString(command);
+
+            String topic = String.format("iot-smarthome/door1/%s", macAddress);
+            MqttMessage message = new MqttMessage(payload.getBytes());
+            message.setQos(1);
+//            message.setRetained(true);
+
+            publisherClient.publish(topic, message);
+            log.info("🚀 Sent Command | Topic: {} | Payload: {}", topic, payload);
+//            Fan fan = new Fan();
+//            fan.setCreatedAt(now);
+//            fan.setDeviceId(deviceId);
+//            fan.setState(state);
+//            fanRepository.save(fan);
+
+        } catch (JsonProcessingException e) {
+            log.error("Lỗi convert JSON: {}", e.getMessage());
+        } catch (MqttException e) {
+            log.error("Lỗi Publish MQTT: {}", e.getMessage());
+        }
+    }
+
+
     public void sendLed_PirCommand(int deviceId, int state) throws MqttException {
         try{
             Optional<Device> device = deviceRepository.findById(deviceId);
@@ -97,7 +132,7 @@ public class MqttPublishService {
             }
             String macAddress = device.get().getMacAddress();
             LocalDateTime  now = LocalDateTime.now();
-            DeviceState deviceState = new DeviceState("device", "led_pir", state, now);
+            DeviceState deviceState = new DeviceState("command", "led_pir", state);
             String payload = objectMapper.writeValueAsString(deviceState);
 
             String topic = String.format("iot-smarthome/room1/%s", macAddress);

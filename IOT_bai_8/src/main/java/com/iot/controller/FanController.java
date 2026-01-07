@@ -1,8 +1,6 @@
 package com.iot.controller;
 
-import com.iot.dto.FanCommandRequest;
-import com.iot.entity.Fan;
-import com.iot.entity.Led_Pir;
+import com.iot.dto.CommandRequest;
 import com.iot.service.MqttPublishService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +19,7 @@ public class FanController {
     private MqttPublishService mqttPublishService;
 
     @PostMapping("/publish")
-    public ResponseEntity<?> publishFan(@RequestBody FanCommandRequest fanrequest) {
+    public ResponseEntity<?> publishFan(@RequestBody CommandRequest fanrequest) {
         Integer deviceId = fanrequest.getDeviceId();
 
         int state = fanrequest.getState();

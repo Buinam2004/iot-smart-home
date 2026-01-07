@@ -85,21 +85,24 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     @Override
     public void messageArrived(String topic, MqttMessage message) {
         String payload = new String(message.getPayload());
+        log.info(" Dinh Quoc Dat 213123 wwith topic: {}", topic);
         String[] parts = topic.split("/");
-        String macAddress = parts[2];
+        String topicSuffix = parts.length > 2 ? parts[2] : "";
         String deviceId = null;
         try {
-            Device device = deviceRepository.findByMacAddress(macAddress);
-            if (device != null) {
-                deviceId = String.valueOf(device.getId());
-            }
-            else {
-                log.error("Device with MAC address {} not found", macAddress);
-                return;
+            Device device = deviceRepository.findByMacAddress(topicSuffix);
+            if (device == null && topicSuffix.matches("\\d+")) {
+                device = deviceRepository.findById(Integer.parseInt(topicSuffix)).orElse(null);
             }
 
+            if (device != null) {
+                deviceId = String.valueOf(device.getId());
+            } else {
+                log.error("Device not found for topic suffix: {}", topicSuffix);
+                return;
+            }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("Error resolving device for topic {}: {}", topic, e.getMessage(), e);
             return;
         }
         log.info("deviceId: {}", deviceId);
@@ -108,6 +111,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
 
         // Gọi method xử lý chính
         handleMessage(topic, payload, deviceId);
+        log.info("Dinh Quoc Dat 213123 completed handleMessage");
     }
 
     @Override
@@ -118,12 +122,12 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     public void handleMessage(String topic, String payload, String deviceId) {
         try {
 
-            if( deviceId == null){
-                return;
-            }
-            if(! deviceRepository.existsById(Integer.parseInt(deviceId))){
-                return;
-            }
+//            if( deviceId == null){
+//                return;
+//            }
+//            if(! deviceRepository.existsById(Integer.parseInt(deviceId))){
+//                return;
+//            }
 
             JsonNode json = objectMapper.readTree(payload);
             
@@ -145,16 +149,20 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         
         switch (type) {
             case "sensor":
+                log.info("Dinh Quoc Dat sensor data received");
                 handleSensorData(json, deviceId);
                 break;
             case "gas":
+                log.info("Dinh Quoc Dat gas data received");
                 handleGasEvent(json, deviceId);
                 break;
             case "device":
+                log.info("Dinh Quoc Dat device data received");
                 handleDeviceState(json, deviceId);
                 break;
             case "command":
                 log.info("Command response from room: {}", json);
+                log.info("Dinh Quoc Dat chuan bi break: {}");
                 break;
             default:
                 log.warn("Unknown message type from room1: {}", type);
@@ -266,21 +274,21 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private void handleDeviceState(JsonNode json, String deviceId) {
         String device = json.get("device").asText();
         int state = json.get("state").asInt();
-        String timestamp = json.get("timestamp").asText();
+//        String timestamp = json.get("timestamp").asText();
         
         String stateStr = state == 1 ? "ON" : "OFF";
         
         switch (device) {
             case "fan":
-                log.info("💨 Fan: {} | Time: {}", stateStr, timestamp);
-                handleFanData(state, timestamp, deviceId);
+                log.info("💨 Fan: {} | Time: {}", stateStr);
+                handleFanData(state, deviceId);
                 break;
             case "led_pir":
-                log.info("💡 LED PIR: {} | Time: {}", stateStr, timestamp);
-                handleLed_pir(state, timestamp, deviceId);
+                log.info("💡 LED PIR: {} | Time: {}", stateStr);
+                handleLed_pir(state, deviceId);
                 break;
             default:
-                log.info("🔧 Device '{}': {} | Time: {}", device, stateStr, timestamp);
+                log.info("🔧 Device '{}': {} | Time: {}", device, stateStr);
         }
         
         // TODO: Lưu trạng thái thiết bị vào database
@@ -288,11 +296,10 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         // TODO: Tính toán thời gian hoạt động và tiêu thụ điện
     }
 
-    private void handleFanData(int state, String timestamp, String deviceId) {
+    private void handleFanData(int state, String deviceId) {
         Fan fan = new Fan();
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
         fan.setState(state);
-        fan.setCreatedAt(localDateTime);
+        fan.setCreatedAt(LocalDateTime.now());
         fan.setDeviceId(Integer.parseInt(deviceId));
 
         fanRepository.save(fan);
@@ -301,13 +308,12 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         sseService.broadcastFanData(fan);
 
     }
-    private void handleLed_pir(int state, String timestamp, String deviceId) {
+    private void handleLed_pir(int state, String deviceId) {
         Led_Pir led_pir = new Led_Pir();
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp);
 
 
         led_pir.setState(state);
-        led_pir.setCreatedAt(localDateTime);
+        led_pir.setCreatedAt(LocalDateTime.now());
         led_pir.setDeviceId(Integer.parseInt(deviceId));
 
         ledPirRepository.save(led_pir);
@@ -327,10 +333,22 @@ public class MqttSubscriberService implements MqttCallbackExtended {
         log.info("🚪 Door message: {}", json);
 
         String type = json.has("type") ? json.get("type").asText() : "";
+        if ("command".equalsIgnoreCase(type)) {
+            // Avoid processing our own published commands as door events
+            return;
+        }
+
+        if (json.has("device") && !"door".equalsIgnoreCase(json.get("device").asText())) {
+            // Ignore non-door payloads that happen to arrive on door1 topics
+            return;
+        }
+
         String event = json.has("event") ? json.get("event").asText() : "";
         String uid = json.has("uid") ? json.get("uid").asText() : "";
-        String timestamp = json.has("timestamp") ? json.get("timestamp").asText() : "";
-        LocalDateTime localDateTime = LocalDateTime.parse(timestamp, DATE_TIME_FORMATTER);
+        if (uid == null || uid.isBlank()) {
+            log.warn("Door message missing uid; ignoring. topic deviceId={} payload={}", deviceId, json);
+            return;
+        }
         if(rfidRepository.existsByUidAndDeviceId(uid, Integer.parseInt(deviceId))){
             Door door = new Door();
             door.setDeviceId(Integer.parseInt(deviceId));
@@ -338,12 +356,12 @@ public class MqttSubscriberService implements MqttCallbackExtended {
             door.setEvent(event);
             door.setType(type);
             door.setAction("OPEN");
-            door.setReceiveAt(localDateTime);
+            door.setReceiveAt(LocalDateTime.now());
             doorRepository.save(door);
 
             // Đẩy event vào MQTT
             try {
-                mqttPublishService.sendDoorCommand(deviceId, "OPEN");
+                mqttPublishService.sendDoorCommand(Integer.parseInt(deviceId), 0, "OPEN");
             }
             catch (MqttException e) {
                 e.printStackTrace();
@@ -357,11 +375,11 @@ public class MqttSubscriberService implements MqttCallbackExtended {
             door.setEvent(event);
             door.setType(type);
             door.setAction("DENY");
-            door.setReceiveAt(localDateTime);
+            door.setReceiveAt(LocalDateTime.now());
             doorRepository.save(door);
             // Đẩy event vào MQTT
             try{
-                mqttPublishService.sendDoorCommand(deviceId, "DENY");
+                mqttPublishService.sendDoorCommand(Integer.parseInt(deviceId), 0, "DENY");
             }
             catch (MqttException e) {
                 e.printStackTrace();
