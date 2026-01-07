@@ -39,7 +39,7 @@ public class MqttPublishService {
             // 2. Chuyển Object thành JSON String
             String payload = objectMapper.writeValueAsString(command);
 
-            String topic = String.format("iot_smarthome/door1/%s", macAddress);
+            String topic = String.format("iot-smarthome/door1/%s", macAddress);
 
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
@@ -68,7 +68,7 @@ public class MqttPublishService {
             DeviceState deviceState = new DeviceState("device", "fan", state, now);
             String payload = objectMapper.writeValueAsString(deviceState);
 
-            String topic = String.format("iot_smarthome/room1/%s", macAddress);
+            String topic = String.format("iot-smarthome/room1/%s", macAddress);
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
 //            message.setRetained(true);
@@ -100,7 +100,7 @@ public class MqttPublishService {
             DeviceState deviceState = new DeviceState("device", "led_pir", state, now);
             String payload = objectMapper.writeValueAsString(deviceState);
 
-            String topic = String.format("iot_smarthome/room1/%s", macAddress);
+            String topic = String.format("iot-smarthome/room1/%s", macAddress);
             MqttMessage message = new MqttMessage(payload.getBytes());
             message.setQos(1);
 //            message.setRetained(true);

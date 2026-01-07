@@ -40,8 +40,8 @@ public class MqttSubscriberService implements MqttCallbackExtended {
 
 
     private static final String[] TOPICS = {
-            "iot_smarthome/door1/+",
-            "iot_smarthome/room1/+"  // + = macAddress
+            "iot-smarthome/door1/+",
+            "iot-smarthome/room1/+"  // + = macAddress
     };
 
     private static final int[] QOS = {1, 1};
@@ -63,7 +63,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
 
     private void subscribe() throws MqttException {
         subscriberClient.subscribe(TOPICS, QOS);
-        log.info("Đã subscribe các topic: iot_smarthome/door1, iot_smarthome/room1");
+        log.info("Đã subscribe các topic: iot-smarthome/door1, iot_smarthome/room1");
     }
 
     @Override
