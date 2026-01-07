@@ -1,45 +1,22 @@
 #include "mqtt_client.h"
 
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecureBearSSL.h>
 #include <PubSubClient.h>
 
 #include "smarthome_door.h"
 
-#define MQTT_HOST "sdf8e281.ala.asia-southeast1.emqxsl.com"
-#define MQTT_PORT 8883
+#define MQTT_HOST "broker.emqx.io"
+#define MQTT_PORT 1883
 
+#define MQTT_CLIENT_ID "spring-backend-door"
 #define MQTT_USER "firmware_door"
 #define MQTT_PASS "12345678"
 
-// ===== CA CERT (GIỐNG KIT 1) =====
-static const char caCert[] PROGMEM = R"EOF(
------BEGIN CERTIFICATE-----
-MIIDjjCCAnagAwIBAgIQAzrx5qcRqaC7KGSxHQn65TANBgkqhkiG9w0BAQsFADBh
-MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
-d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBH
-MjAeFw0xMzA4MDExMjAwMDBaFw0zODAxMTUxMjAwMDBaMGExCzAJBgNVBAYTAlVT
-MRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5j
-b20xIDAeBgNVBAMTF0RpZ2lDZXJ0IEdsb2JhbCBSb290IEcyMIIBIjANBgkqhkiG
-9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuzfNNNx7a8myaJCtSnX/RrohCgiN9RlUyfuI
-2/Ou8jqJkTx65qsGGmvPrC3oXgkkRLpimn7Wo6h+4FR1IAWsULecYxpsMNzaHxmx
-1x7e/dfgy5SDN67sH0NO3Xss0r0upS/kqbitOtSZpLYl6ZtrAGCSYP9PIUkY92eQ
-q2EGnI/yuum06ZIya7XzV+hdG82MHauVBJVJ8zUtluNJbd134/tJS7SsVQepj5Wz
-tCO7TG1F8PapspUwtP1MVYwnSlcUfIKdzXOS0xZKBgyMUNGPHgm+F6HmIcr9g+UQ
-vIOlCsRnKPZzFBQ9RnbDhxSJITRNrw9FDKZJobq7nMWxM4MphQIDAQABo0IwQDAP
-BgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBhjAdBgNVHQ4EFgQUTiJUIBiV
-5uNu5g/6+rkS7QYXjzkwDQYJKoZIhvcNAQELBQADggEBAGBnKJRvDkhj6zHd6mcY
-1Yl9PMWLSn/pvtsrF9+wX3N3KjITOYFnQoQj8kVnNeyIv/iPsGEMNKSuIEyExtv4
-NeF22d+mQrvHRAiGfzZ0JFrabA0UWTW98kndth/Jsw1HKj2ZL7tcu7XUIOGZX1NG
-Fdtom/DzMNU+MeKNhJ7jitralj41E6Vf8PlwUHBHQRFXGU7Aj64GxJUTFy8bJZ91
-8rGOmaFvE7FBcf6IKshPECBV1/MUReXgRPTqh5Uykw7+U0b6LJ3/iyK5S9kJRaTe
-pLiaWN0bfVKfjllDiIGknibVb63dDcY3fe0Dkhvld1927jyNxF1WW6LZZm6zNTfl
-MrY=
------END CERTIFICATE-----
-)EOF";
-static BearSSL::WiFiClientSecure net;
+#define MQTT_TOPIC "iot-smarthome/door1/8c4f0042001f"
+#define MQTT_TOPIC_ROOM "iot-smarthome/room1/8c4f00416f9e"
+
+static WiFiClient net;
 static PubSubClient mqtt(net);
-static BearSSL::X509List cert(caCert);
 
 static void mqttCallback(char* topic, byte* payload, unsigned int length) {
     char msg[256];
@@ -48,23 +25,20 @@ static void mqttCallback(char* topic, byte* payload, unsigned int length) {
 
     Serial.printf("[MQTT] RX %s <- %s\n", topic, msg);
 
-    // Từ room1 (gas alert)
-    if (strcmp(topic, "iot_smarthome/room1") == 0) {
+    // Từ door1 (command từ backend)
+    if (strcmp(topic, MQTT_TOPIC) == 0) {
         Door_handleCommand(msg);
         return;
     }
 
-    // Từ door1 (command từ backend)
-    if (strcmp(topic, "iot_smarthome/door1") == 0) {
+    // Từ room1 (gas alert, DHT data)
+    if (strcmp(topic, MQTT_TOPIC_ROOM) == 0) {
         Door_handleCommand(msg);
         return;
     }
 }
 
 void MQTT_init() {
-    net.setTrustAnchors(&cert);
-    net.setBufferSizes(512, 512);
-
     mqtt.setServer(MQTT_HOST, MQTT_PORT);
     mqtt.setCallback(mqttCallback);
 }
@@ -77,14 +51,13 @@ void MQTT_loop() {
             lastTry = millis();
 
             Serial.println("[MQTT] Attempting connection...");
-            String cid = "esp8266_door_" + String(ESP.getChipId());
-            if (mqtt.connect(cid.c_str(), MQTT_USER, MQTT_PASS)) {
+            if (mqtt.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS)) {
                 Serial.println("[MQTT] Connected");
 
                 // Subscribe topic chính
-                mqtt.subscribe("iot_smarthome/door1");
-                mqtt.subscribe("iot_smarthome/room1");
-                Serial.println("[MQTT] Subscribed to door1 & room1");
+                mqtt.subscribe(MQTT_TOPIC);
+                mqtt.subscribe(MQTT_TOPIC_ROOM);
+                Serial.printf("[MQTT] Subscribed to %s & %s\n", MQTT_TOPIC, MQTT_TOPIC_ROOM);
             } else {
                 Serial.print("[MQTT] Connection failed, state: ");
                 Serial.println(mqtt.state());
@@ -104,10 +77,9 @@ void MQTT_publish(const char* topic, const char* payload) {
         static unsigned long lastTry = 0;
         if (millis() - lastTry > 1000) {
             lastTry = millis();
-            String cid = "esp8266_door_" + String(ESP.getChipId());
-            if (mqtt.connect(cid.c_str(), MQTT_USER, MQTT_PASS)) {
-                mqtt.subscribe("iot_smarthome/door1");
-                mqtt.subscribe("iot_smarthome/room1");
+            if (mqtt.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS)) {
+                mqtt.subscribe(MQTT_TOPIC);
+                mqtt.subscribe(MQTT_TOPIC_ROOM);
                 Serial.println("[MQTT] Reconnected for publish");
             } else {
                 Serial.println("[MQTT] ERROR: Not connected, cannot publish");
