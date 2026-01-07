@@ -1,5 +1,6 @@
 package com.iot.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class DhtSensor extends BaseSensor {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", insertable = false, updatable = false)
+    @JsonIgnore
     private Device device;
 
 
