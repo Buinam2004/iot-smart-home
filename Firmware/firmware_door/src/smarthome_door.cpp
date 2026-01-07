@@ -4,6 +4,8 @@
 #include "servo_door.h"
 #include "lcd_display.h"
 
+#define MQTT_TOPIC "iot-smarthome/door1/8c4f0042001f"
+
 static DoorDataCallback dataCallback = nullptr;
 
 static bool doorOpened = false;
@@ -31,7 +33,7 @@ void ControlDoor_update() {
 
     // ===== AUTO CLOSE =====
     if (doorOpened && millis() - doorOpenTime > DOOR_AUTO_CLOSE_MS) {
-        Door_close();            // GIỮ NGUYÊN API CŨ
+        Door_close();            
         doorOpened = false;
         LCD_showReady();
         Serial.println("[DOOR] Auto close");
@@ -67,7 +69,7 @@ void ControlDoor_update() {
             );
 
             Serial.println("[DOOR] Calling MQTT callback...");
-            dataCallback("iot_smarthome/door1", payload);
+            dataCallback(MQTT_TOPIC, payload);
             Serial.println("[DOOR] MQTT callback called");
         } else {
             Serial.println("[DOOR] ERROR: dataCallback is NULL");
