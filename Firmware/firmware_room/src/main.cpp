@@ -5,16 +5,9 @@
 #include "smarthome_room.h"
 #include "mqtt_client.h"
 
-// ===================================================
-// WIFI CONFIG
-// ===================================================
 #define WIFI_SSID "IOT"
 #define WIFI_PASS "20225211"
 
-// ===================================================
-// MQTT DATA CALLBACK
-// Room -> MQTT
-// ===================================================
 static void mqttDataCallback(const char* topic, const char* payload) {
     MQTT_publish(topic, payload);
 }
@@ -33,9 +26,6 @@ void syncTime() {
     Serial.println("[Time] Time synced");
 }
 
-// ===================================================
-// SETUP
-// ===================================================
 void setup() {
     Serial.begin(115200);
     delay(200);
@@ -61,25 +51,18 @@ void setup() {
     Serial.print("[WiFi] IP: ");
     Serial.println(WiFi.localIP());
 
-    // ----- ROOM INIT -----
+
     Room_init();
 
-    // Register callback to send data via MQTT
     Room_setDataCallback(mqttDataCallback);
 
-    // ----- MQTT INIT -----
     MQTT_init();
 
     Serial.println("[System] Setup complete");
 }
 
-// ===================================================
-// LOOP
-// ===================================================
 void loop() {
     // Main logic
     Room_update();
-
-    // MQTT handling (connect, subscribe, receive)
     MQTT_loop();
 }

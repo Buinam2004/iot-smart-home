@@ -10,6 +10,8 @@
 #include <ArduinoJson.h>
 #include <time.h>
 
+#define MQTT_TOPIC "iot-smarthome/room1/8c4f00416f9e"
+
 // ===== HELPER: Lấy timestamp =====
 static void getTimestamp(char* buffer, size_t size) {
     time_t now = time(nullptr);
@@ -87,7 +89,7 @@ void Room_update() {
                 
                 String payload;
                 serializeJson(doc, payload);
-                dataCallback("iot_smarthome/room1", payload.c_str());
+                dataCallback(MQTT_TOPIC, payload.c_str());
             }
         }
     }
@@ -127,7 +129,7 @@ static void handleNormalState() {
                 
                 String payload;
                 serializeJson(doc, payload);
-                dataCallback("iot_smarthome/room1", payload.c_str());
+                dataCallback(MQTT_TOPIC, payload.c_str());
             }
         }
     }
@@ -152,7 +154,7 @@ static void handleGasAlertState() {
             
             String payload;
             serializeJson(doc, payload);
-            dataCallback("iot_smarthome/room1", payload.c_str());
+            dataCallback(MQTT_TOPIC, payload.c_str());
         }
     }
 }
@@ -175,7 +177,7 @@ static void handleButton() {
             
             String payload;
             serializeJson(doc, payload);
-            dataCallback("iot_smarthome/room1", payload.c_str());
+            dataCallback(MQTT_TOPIC, payload.c_str());
         }
     }
 }
@@ -203,7 +205,7 @@ static void handlePIR() {
             
             String payload;
             serializeJson(doc, payload);
-            dataCallback("iot_smarthome/room1", payload.c_str());
+            dataCallback(MQTT_TOPIC, payload.c_str());
         }
     }
     
@@ -231,7 +233,7 @@ static void handlePIR() {
             
             String payload;
             serializeJson(doc, payload);
-            dataCallback("iot_smarthome/room1", payload.c_str());
+            dataCallback(MQTT_TOPIC, payload.c_str());
         }
     }
 }
@@ -264,7 +266,7 @@ void Room_setFanState(bool on) {
         
         String payload;
         serializeJson(doc, payload);
-        dataCallback("iot_smarthome/room1", payload.c_str());
+        dataCallback(MQTT_TOPIC, payload.c_str());
     }
 }
 
@@ -286,7 +288,7 @@ void Room_clearGasAlert() {
             
             String payload;
             serializeJson(doc, payload);
-            dataCallback("iot_smarthome/room1", payload.c_str());
+            dataCallback(MQTT_TOPIC, payload.c_str());
         }
     }
 }
@@ -313,7 +315,7 @@ void Room_setPIRLedState(bool on) {
         
         String payload;
         serializeJson(doc, payload);
-        dataCallback("iot_smarthome/room1", payload.c_str());
+        dataCallback(MQTT_TOPIC, payload.c_str());
     }
 }
 
