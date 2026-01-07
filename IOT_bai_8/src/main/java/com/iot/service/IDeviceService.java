@@ -10,11 +10,10 @@ import java.util.Optional;
 
 public interface IDeviceService {
     List<DeviceDTO> getAllDevices();
+    List<DeviceDTO> getAllDeviceByUserId(int userId);
     Optional<DeviceDTO> getDeviceById(Integer id);
     Device createDevice(Integer userId, CreateDeviceDTO device);
     UpdateDeviceDTO updateDevice(Integer id, Device deviceDetails);
     void deleteDevice(Integer id);
     List<DeviceDTO> findByCreatorUsernameAndStatus(String creatornName, String status);
-
-
 }

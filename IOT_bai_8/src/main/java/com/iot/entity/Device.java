@@ -25,7 +25,7 @@ public class Device {
     @Column(nullable = false)
     private String name;
     
-    @Column(name = "macAddress", nullable = false, unique = true)
+    @Column(name = "mac_address", nullable = false, unique = true)
     private String macAddress;
     
     @Column(name = "is_online")

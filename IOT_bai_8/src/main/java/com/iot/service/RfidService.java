@@ -3,14 +3,13 @@ package com.iot.service;
 
 import com.iot.entity.Rfid;
 import com.iot.repository.RfidRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class RfidService implements IRfidService {
-
-    @Autowired
-    private RfidRepository rfidRepository;
+    private final RfidRepository rfidRepository;
 
     @Override
     public Rfid createRfid(String uid, Integer deviceId ,Integer userId) {
@@ -25,7 +24,6 @@ public class RfidService implements IRfidService {
 
     @Override
     public boolean checkRfid(String uid, Integer deviceId) {
-        if(rfidRepository.existsByUidAndDeviceId(uid, deviceId)) return true;
-        return false;
+        return rfidRepository.existsByUidAndDeviceId(uid, deviceId);
     }
 }

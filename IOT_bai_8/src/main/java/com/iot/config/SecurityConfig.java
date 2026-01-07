@@ -3,6 +3,7 @@ package com.iot.config;
 import com.iot.custom.CustomUserDetailsService;
 import com.iot.security.DeviceJwtFilter;
 import com.iot.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,16 +29,11 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 @EnableWebSecurity
 @EnableMethodSecurity
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
-
-    @Autowired
-    private JwtAuthenticationFilter jwtFilter;
-
-    @Autowired
-    private CustomUserDetailsService customUserDetailService;
-
-    @Autowired
-    private DeviceJwtFilter deviceJwtFilter;
+    private final JwtAuthenticationFilter jwtFilter;
+    private final CustomUserDetailsService customUserDetailService;
+    private final DeviceJwtFilter deviceJwtFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {

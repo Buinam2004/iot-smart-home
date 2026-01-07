@@ -1,37 +1,46 @@
 package com.iot.controller;
 
-import com.iot.dto.CommandRequest;
 import com.iot.dto.DoorCommandRequest;
+import com.iot.entity.Door;
+import com.iot.repository.DoorRepository;
 import com.iot.service.MqttPublishService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api/door")
 @Slf4j
+@RequiredArgsConstructor
 public class DoorController {
-
-    @Autowired
-    private MqttPublishService mqttPublishService;
+    private final MqttPublishService mqttPublishService;
+    private final DoorRepository doorRepository;
 
     @PostMapping("/publish")
-    public ResponseEntity<?> publishFan(@RequestBody DoorCommandRequest doorrequest) {
-        Integer deviceId = doorrequest.getDeviceId();
+    public ResponseEntity<?> publishFan(@RequestBody DoorCommandRequest doorRequest) {
+        Integer deviceId = doorRequest.getDeviceId();
 
-        int state = doorrequest.getState();
-        String action = doorrequest.getAction();
+        int state = doorRequest.getState();
+        String action = doorRequest.getAction();
         try {
             log.info("Gửi lệnh điều khiển cửa: deviceId={}, state={}", deviceId, state);
-            mqttPublishService.sendDoorCommand(deviceId, state, action);
+            Door door = new Door();
+            door.setDeviceId(deviceId);
+            door.setAction(action);
+            door.setReceiveAt(LocalDateTime.now());
+            doorRepository.save(door);
+
+            mqttPublishService.sendDoorCommand(deviceId, action);
             return ResponseEntity.ok("Đã gửi lệnh điều khiển cửa");
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return ResponseEntity.internalServerError().body("Lỗi hệ thống: " + e.getMessage());
         }
     }

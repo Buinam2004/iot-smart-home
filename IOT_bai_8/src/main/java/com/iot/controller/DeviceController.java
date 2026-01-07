@@ -7,11 +7,13 @@ import com.iot.dto.UpdateDeviceDTO;
 import com.iot.entity.Device;
 import com.iot.exception.ResourceNotFoundException;
 import com.iot.service.IDeviceService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,14 +21,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/devices")
+@RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DeviceController {
-    
-    @Autowired
-    private IDeviceService deviceService;
+    private final IDeviceService deviceService;
     
     // GET /api/devices?creatorName=username - Tìm kiếm theo tên người tạo và trả về
-    // danh sách các thiết bị do người đó tạo với trạng thái online/offline
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<DeviceDTO>> getAllDevices(
@@ -36,17 +36,21 @@ public class DeviceController {
         List<DeviceDTO> devices;
 
         if (creatorName == null || creatorName.isEmpty()) {
-            // Nếu không có tham số creatorName, trả về tất cả thiết bị
             devices = deviceService.getAllDevices();
             return ResponseEntity.ok(devices);
         }
-        if (status == true && status) {
+        if (status) {
             devices = deviceService.findByCreatorUsernameAndStatus(creatorName, "online");
         } else {
             devices = deviceService.findByCreatorUsernameAndStatus(creatorName, "offline");
         }
         
         return ResponseEntity.ok(devices);
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<DeviceDTO>> getAllUserDevices(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        return ResponseEntity.ok(deviceService.getAllDeviceByUserId(customUserDetails.getUserId()));
     }
 
     // GET /api/devices/{id} - Lấy device theo ID

@@ -23,10 +23,8 @@ public class JwtTokenProvider {
     private final int TIME_EXPIRE_REFRESHTOKEN = 7 * 86400000; // 24 hours in milliseconds
     private final SecretKey jwtSecret;
 
-    // Hàm khởi tạo để nhận giá trị bí mật từ application.properties
     public JwtTokenProvider(@Value("${app.jwt.secret}") String secret) {
         this.jwtSecret = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)); // tạo khóa bí mật từ chuỗi ký tự
-        // dùng thuật toán HMAC SHA để tạo khóa
     }
 
     public String generateToken(String username, String role) {

@@ -6,9 +6,8 @@ import com.iot.dto.DeviceDTO;
 import com.iot.dto.UpdateDeviceDTO;
 import com.iot.entity.Device;
 import com.iot.repository.DeviceRepository;
-import com.iot.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -19,25 +18,25 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor()
 public class DeviceService implements IDeviceService {
-    
-    @Autowired
-    private DeviceRepository deviceRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final DeviceRepository deviceRepository;
 
     public List<DeviceDTO> getAllDevices() {
         List<Device> devices = deviceRepository.findAllWithUser();
-        return devices.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        return devices.stream().map(this::convertToDTO).toList();
     }
-    
+
+    public List<DeviceDTO> getAllDeviceByUserId(int userId) {
+        return deviceRepository.findAllByUserId(userId)
+                .stream().map(this::convertToDTO).toList();
+    }
+
     public Optional<DeviceDTO> getDeviceById(Integer id) {
         Device device = deviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
         System.out.println(device);
-        return Optional.ofNullable(convertToDTO(device));
+        return Optional.of(convertToDTO(device));
 
     }
     
@@ -54,14 +53,13 @@ public class DeviceService implements IDeviceService {
         Device device = deviceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Device not found with id: " + id));
 
-        UpdateDeviceDTO updateDeviceDTO = new UpdateDeviceDTO();
         device.setId(id);
         device.setMacAddress(deviceDetails.getMacAddress());
         device.setName(deviceDetails.getName());
         device.setUserId(deviceDetails.getUserId());
         device.setIsOnline(deviceDetails.getIsOnline());
         deviceRepository.save(device);
-        return  updateDeviceDTO.builder()
+        return  UpdateDeviceDTO.builder()
                 .deviceKey(deviceDetails.getMacAddress())
                 .name(deviceDetails.getName())
                 .userId(deviceDetails.getUserId())
@@ -85,14 +83,14 @@ public class DeviceService implements IDeviceService {
         if (status.equalsIgnoreCase("online")) {
             List<Device> filteredDevices = devices.stream()
                     .filter(Device::getIsOnline)
-                    .collect(Collectors.toList());
+                    .toList();
             return filteredDevices.stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
         } else {
             List<Device> filteredDevices = devices.stream()
                     .filter(device -> !device.getIsOnline())
-                    .collect(Collectors.toList());
+                    .toList();
             return filteredDevices.stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
@@ -106,14 +104,12 @@ public class DeviceService implements IDeviceService {
         log.info("Authentication object: {}", authentication);
         Object principal = authentication.getPrincipal();
 
-        // Kiểm tra xem principal có phải là CustomUserDetails không
-        if (!(principal instanceof CustomUserDetails)) {
+        if (!(principal instanceof CustomUserDetails currentUser)) {
             return false;
         }
 
-        CustomUserDetails currentUser = (CustomUserDetails) principal;
         log.info("Current user: {}", currentUser);
-        Integer currentUserId = currentUser.getUserId(); // Lấy ID từ CustomUserDetails bạn đã tạo
+        Integer currentUserId = currentUser.getUserId();
 
         log.info("Checking ownership for UserID: {} and DeviceID: {}", currentUserId, deviceId);
 

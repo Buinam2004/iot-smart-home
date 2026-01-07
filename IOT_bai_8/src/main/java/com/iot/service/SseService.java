@@ -7,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -15,16 +14,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Service
 @Slf4j
 public class SseService {
-    // Map lưu trữ: DeviceID -> List các kết nối của thiết bị đó
     private final Map<String, CopyOnWriteArrayList<SseEmitter>> deviceEmitters = new ConcurrentHashMap<>();
 
     public SseEmitter createConnection(String deviceId) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 
-        // Nếu chưa có list cho deviceId này thì tạo mới
         deviceEmitters.computeIfAbsent(deviceId, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
-        // Dọn dẹp khi kết thúc
         emitter.onCompletion(() -> removeEmitter(deviceId, emitter));
         emitter.onTimeout(() -> removeEmitter(deviceId, emitter));
         emitter.onError((e) -> removeEmitter(deviceId, emitter));
@@ -67,10 +63,6 @@ public class SseService {
         String deviceId = String.valueOf(data.getDeviceId());
         sendToDevice(deviceId, "led-pir-data", data);
     }
-
-    public void sendToDevice(String deviceId, String data, SseEmitter emitter) {}
-
-    public void sendToDevice(String deviceId, String event, DhtSensor data) {}
 
     // Hàm dùng chung để gửi message cho đúng nhóm deviceId
     private void sendToDevice(String deviceId, String eventName, Object data) {

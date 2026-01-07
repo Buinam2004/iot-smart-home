@@ -14,29 +14,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class RefreshTokenService implements IRefreshTokenService {
-
     private final RefreshTokenRepository refreshTokenRepository;
-
-
-    @Override
-    public ResponseEntity<?> createRefreshToken(String newRefreshToken) {
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setRefreshToken(newRefreshToken);
-        refreshToken.setExpiryDate(LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(refreshToken);
-        return ResponseEntity.ok(refreshToken);
-
-    }
-
-    @Override
-    public ResponseEntity<?> deleteRefreshToken(String refreshToken) {
-        RefreshToken refreshTokenOptional = refreshTokenRepository.findByRefreshToken(refreshToken);
-        if (refreshTokenOptional != null) {
-            refreshTokenRepository.delete(refreshTokenOptional);
-            return ResponseEntity.ok("Refresh token deleted successfully");
-        }
-        return ResponseEntity.ok("Refresh token deleted successfully");
-    }
 
     @Override
     public Optional<RefreshToken> checkRefreshToken(String refreshToken) {
@@ -49,15 +27,16 @@ public class RefreshTokenService implements IRefreshTokenService {
     }
 
     @Override
-    public ResponseEntity<?> refreshToken(String oldRefreshToken, String newRefreshToken) {
+    public void refreshToken(String oldRefreshToken, String newRefreshToken) {
         RefreshToken refreshTokenOptional = refreshTokenRepository.findByRefreshToken(oldRefreshToken);
         if (refreshTokenOptional == null) {
-            return ResponseEntity.badRequest().body("Invalid refresh token");
+            ResponseEntity.badRequest().body("Invalid refresh token");
+            return;
         }
         refreshTokenOptional.setRefreshToken(newRefreshToken);
         refreshTokenOptional.setExpiryDate(LocalDateTime.now().plusDays(7));
         refreshTokenRepository.save(refreshTokenOptional);
-        return ResponseEntity.ok(refreshTokenOptional);
+        ResponseEntity.ok(refreshTokenOptional);
     }
 
 }

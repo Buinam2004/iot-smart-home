@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 
-public class AuthenticationServicre implements IAuthenticationService {
+public class AuthenticationService implements IAuthenticationService {
 
     private final AuthenticationManager authManager;
     private final JwtTokenProvider tokenProvider;
@@ -33,14 +33,9 @@ public class AuthenticationServicre implements IAuthenticationService {
     @Override
     public ResponseEntity<?> login(String username, String password) {
         try {
-            // tạo ra 1 đối tượng Authentication bằng cách sử dụng AuthenticationManager
             Authentication authentication = authManager.authenticate(
-                    // Tạo một đối tượng UsernamePasswordAuthenticationToken với tên người dùng và mật khẩu được cung cấp
-                    // chứa thông tin xác thực của người dùng
-                    // Spring Security sẽ sử dụng đối tượng này để xác thực người dùng
                     new UsernamePasswordAuthenticationToken(username, password)
             );
-            // Nếu xác thực thành công, ta có thể lấy thông tin người dùng từ đối tượng Authentication
             log.info("User {} authenticated successfully", username);
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             String role = userDetails.getAuthorities().iterator().next().getAuthority(); // vì chỉ có 1 role nên lấy thằng đầu tiên
@@ -62,16 +57,15 @@ public class AuthenticationServicre implements IAuthenticationService {
                     .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                     .body(respDTO);
         }
-        // Xử lý các ngoại lệ xác thực
-        catch (BadCredentialsException e) { // Sai thông tin đăng nhập
+        catch (BadCredentialsException e) {
             log.warn("Bad credentials" + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
         }
-        catch (DisabledException e) { // Tài khoản bị vô hiệu hóa
+        catch (DisabledException e) {
             log.warn("Account disabled" + e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Account is disabled");
         }
-        catch (Exception e) { // Lỗi khác
+        catch (Exception e) {
             log.error("Authentication error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during authentication");
         }
@@ -79,7 +73,6 @@ public class AuthenticationServicre implements IAuthenticationService {
 
     @Override
     public ResponseEntity<?> authenticateDevice(Integer deviceId, String macAddress) {
-        // Kiểm tra thông tin đăng nhập của thiết bị trong cơ sở dữ liệu
         boolean checkCredentials = deviceRepository.existsByIdAndMacAddress(deviceId, macAddress);
         if (!checkCredentials) {
             log.warn("Device authentication failed for deviceId={}", deviceId);
@@ -141,10 +134,10 @@ public class AuthenticationServicre implements IAuthenticationService {
     private ResponseCookie buildRefreshTokenCookie(String refreshToken, long maxAgeMillis) {
         return ResponseCookie.from("RefreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false) // ⚠️ Set to false for localhost HTTP (true for production HTTPS)
-                .sameSite("Lax") // ✅ Changed from Strict to Lax - allows same-site requests
+                .secure(false)
+                .sameSite("Lax")
                 .path("/")
-                .maxAge(maxAgeMillis / 1000) // Convert to seconds
+                .maxAge(maxAgeMillis / 1000)
                 .build();
     }
 }
