@@ -33,6 +33,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     private final Led_PirRepository ledPirRepository;
     private final SseService sseService;
     private final MqttPublishService mqttPublishService;
+    private final EmailService emailService;
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -45,6 +46,7 @@ public class MqttSubscriberService implements MqttCallbackExtended {
     };
 
     private static final int[] QOS = {1, 1};
+    private final UserRepository userRepository;
 
     @PostConstruct
     public void init() throws MqttException {
@@ -241,11 +243,26 @@ public class MqttSubscriberService implements MqttCallbackExtended {
             gasSensor.setValue(value);
             gasSensor.setEvent(event);
             gasSensor.setType(type);
+            gasSensor.setSensor("gas");
             gasSensor.setReceivedAt(localDateTime);
             gasSensorRepository.save(gasSensor);
 
             sseService.broadcastGasData(gasSensor);
-            
+            Device fullDevice = deviceRepository.findById(Integer.parseInt(deviceId)).get();
+            if (fullDevice == null){
+                return;
+            }
+            Integer userId = fullDevice.getUserId();
+            User user = userRepository.findById(userId).get();
+            if (user == null){
+                return;
+            }
+
+            log.info("user: {}", user);
+            String subject = "Cảnh báo cháy nổ";
+            String body = "Hiện tại cảnh báo cháy nổ nhà bạn đang cao, vui lòng vào WEB để kiểm tra";
+            emailService.sendSimpleEmail(user.getEmail(), subject, body);
+
         } else if ("clear".equals(event)) {
             log.info("Gas alert cleared | Time: {}", timestamp);
         }
